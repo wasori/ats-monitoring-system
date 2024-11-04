@@ -1,0 +1,334 @@
+.live-up-area {
+    /* float: left; */
+    width: 100%;
+    height: 58%;
+    /* border: 1px solid red; */
+}
+.live-down-area {
+    width: 100%;
+    height: 40%;
+    margin-top: 10px;
+    /* border: 1px solid rgb(94, 255, 0); */
+}
+.live-up-left {
+    float: left;
+    width: 28%;
+    height: 100%;
+    /* border: 1px solid red; */
+}
+.live-up-right {
+    float: left;
+    width: 72%;
+    height:100%;
+    /* border: 1px solid blue; */
+}
+
+.live-list-button {
+    width: 100%;
+    height: 40px;
+    /* border: 1px solid blue; */
+}
+
+.live-list-button button {
+    width: 120px;
+    height: 100%;
+    background-color: rgb(82, 82, 82);
+    color: white;
+}
+
+.live-list-table {
+    width: 97%;
+    height: calc(100% - 40px);
+    /* border: 1px solid blue; */
+    background-color: rgb(36, 69, 129);
+    overflow: hidden;
+    overflow-y: auto; /* 스크롤 동작 */
+}
+
+.live-list-table::-webkit-scrollbar {
+    display: none; /* 크롬, 사파리, 엣지에서 스크롤바 숨김 */
+}
+
+.t3 {
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(22, 39, 70);
+    border-collapse: collapse;
+    
+}
+
+.t3 thead {
+    background-color: rgb(44, 63, 99);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.t3 tbody {
+    /* display: block; */
+    height:100%; /* 조정 가능 */
+    
+    background-color: rgb(56, 69, 94);
+    width: 100%;
+}
+
+#location-robo-tbody tr td,
+#total_alert_table tr td,
+#total_alert_table2 tr td  {
+    height: 50px;
+}
+
+
+.t4 {
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(22, 39, 70);
+    border-collapse: collapse;
+    margin-bottom: 5px;
+}
+
+.t4 thead {
+    background-color: rgb(44, 63, 99);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.t4 tbody {
+    /* display: block; */
+    height:100%; /* 조정 가능 */
+    
+    background-color: rgb(56, 69, 94);
+    width: 100%;
+}
+
+.live-map-area {
+    width: 100%;
+    height: 100%;
+    /* border: 1px solid red; */
+}
+
+.live-map-area p {
+    margin: 0px 0px 5px 0px;
+    font-weight: bolder;
+    font-size: 35px;
+    color: white;
+    text-align: center;
+}
+
+.live-map-left {
+    float: left;
+    width: 60%;
+    height: 91%;
+}
+
+
+.live-map-title {
+    width: 200px;
+    height: 32px;
+    background-color: rgb(28, 124, 202);
+    text-align: center;
+    padding: 4px;
+    margin-bottom: 15px;
+}
+
+.live-map-title p {
+    font-weight: 500;
+    font-size: 17px;
+    color: white;
+}
+
+.live-map {
+    float: left;
+    width: 99%;
+    height: calc(100% - 47px);
+}
+
+.live-map {
+    background-image: url(../img/2F.png);
+    background-size: contain;
+    background-position : center;
+}
+
+#robotCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+
+.live-map-right {
+    float: left;
+    width: 40%;
+    height: 91%;
+}
+
+.live-map-detail-area {
+    /* float: left; */
+    width: 100%;
+    /* margin-left: 5px; */
+    height: 30%;
+    /* border: 1px solid gold; */
+}
+
+.live-map-detail {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overflow-y: auto; /* 스크롤 동작 */
+}
+
+.live-map-detail::-webkit-scrollbar {
+    display: none; /* 크롬, 사파리, 엣지에서 스크롤바 숨김 */
+}
+
+.live-map-camera {
+    width: 100%;
+    margin-top: 6px;
+    height: 69%;
+    /* border: 1px solid green; */
+}
+
+.snapshot {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.temperature {
+    position: absolute;
+    top: 10px; /* 원하는 위치에 배치 */
+    left: 70px;
+    color: rgb(30, 255, 0);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.temtime {
+    position: absolute;
+    bottom: 10px; /* 원하는 위치에 배치 */
+    left: 20px;
+    color: rgb(0, 255, 221);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.live-robo-camera {
+    float: left;
+    width: 57%;
+    height: 100%;
+    background-color: rgb(68, 106, 161);
+}
+.live-robo-camera p {
+    font-size: 15px;
+    margin-top: 130px;
+}
+
+.live-temp-camera {
+    float: left;
+    width: 39%;
+    height: 100%;
+    margin-left: 8px;
+    background-color: rgb(68, 106, 161);
+}
+
+.live-right-down-area {
+    width: 100%;
+    height: 42%;
+    margin-top: 10px;
+    overflow: hidden;
+    overflow-y: auto; /* 스크롤 동작 */
+}
+
+.live-right-down-area::-webkit-scrollbar {
+    display: none; /* 크롬, 사파리, 엣지에서 스크롤바 숨김 */
+}
+
+.t5 {
+    width: 100%;
+    height: 100%;
+    /* border: 2px solid rgb(96, 131, 196); */
+    font-weight: 15px;
+    background-color: rgb(36, 50, 75);
+}
+
+.t5 thead {
+    background-color: rgb(44, 63, 99);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.t5 tbody {
+    /* display: block; */
+    height:100%; /* 조정 가능 */
+    margin-top: 50px;
+    background-color: rgb(56, 69, 94);
+    width: 100%;
+}
+
+.alert-button-area {
+    width: 100%;
+    height: 40px;
+    /* border: 1px solid salmon; */
+    margin-bottom: 5px;
+}
+
+.alert-button-area button {
+    float: left;
+    width: 100px;
+    height: 100%;
+    background-color: rgb(51, 51, 51);
+    color: aliceblue;
+    margin-right: 5px;
+}
+
+.alert-button-area select {
+    float: right;
+    width: 120px;
+    height: 100%;
+    background-color: rgb(75, 75, 75);
+    color: aliceblue;
+}
+
+.alert-table-second {
+    width: 100%;
+    height: 86%;
+    /* border: 1px solid salmon; */
+    background-color: rgb(36, 69, 129);
+    overflow: hidden;
+    overflow-y: auto; /* 스크롤 동작 */
+}
+
+.t22 {
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(22, 39, 70);
+    border-collapse: collapse;
+    
+}
+
+.t22 thead {
+    background-color: rgb(44, 63, 99);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.t22 tbody {
+    /* display: block; */
+    height:100%; /* 조정 가능 */
+    
+    background-color: rgb(56, 69, 94);
+    width: 100%;
+}
+
+/* 스크롤바 숨기기 */
+.alert-table::-webkit-scrollbar {
+    display: none; /* 크롬, 사파리, 엣지에서 스크롤바 숨김 */
+}

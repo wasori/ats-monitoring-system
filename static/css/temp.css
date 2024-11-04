@@ -1,0 +1,84 @@
+.tem-box {
+    width: 40%;
+    height: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    margin-top: 180px;
+    background-color: rgba(81, 106, 189, 0.493);
+    border: 2px solid rgb(81, 106, 189);
+}
+
+.tem-photo-box {
+    float: left;
+    width: 50%;
+    height: 100%;
+    padding: 30px;
+    border: 2px solid rgba(81, 106, 189, 0.493);
+}
+
+.tem-photo {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.tem-temp {
+    position: absolute;
+    top: 10px; /* 원하는 위치에 배치 */
+    left: 100px;
+    color: rgb(30, 255, 0);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.tem-time {
+    position: absolute;
+    bottom: 10px; /* 원하는 위치에 배치 */
+    left: 50px;
+    color: rgb(34, 207, 184);
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.tem-detail {
+    float: left;
+    margin-top: 20px;
+    width: 50%;
+    height: 94%;
+    padding: 0px 25px 25px 25px;
+    overflow-y: scroll;
+}
+
+.tem-detail::-webkit-scrollbar {
+    width: 12px;
+}
+
+  .tem-detail::-webkit-scrollbar-thumb {
+    background: #202020a2; /* 스크롤바 막대 색상 */
+    min-height: 30px;
+    border-radius: 5px;
+  }
+
+.tem-detail div {
+    padding: 5px 5px;
+    color: white;
+    font-size: 16px;
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid rgba(81, 106, 189, 0.493); /* 각 데이터 항목 구분선 */
+    white-space: nowrap; /* 긴 텍스트를 한 줄로 표시 */
+    overflow: hidden;    /* 텍스트가 너무 길면 잘림 */
+    text-overflow: ellipsis; /* 잘린 부분에 ... 표시 */
+}
+
+.tem-detail div:hover {
+    background-color: rgba(0, 0, 0, 0.363);
+    cursor: pointer;
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관제모니터링시스템</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/signin.css') }}" >
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-input-box">
+            <div><input type="text" id="username" class="id" placeholder="사용자 아이디"></div>
+            <div><input type="password" id="password" class="pass" placeholder="비밀번호"></div>
+            <div><button class="login-button" onclick="signin()">로그인</button></div>
+            <div><button class="sign-up">사용자 등록</button></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/signin.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/camera.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/temp.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/data.css') }}" >
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.8.0/dist/socket.io.min.js" integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd" crossorigin="anonymous"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>-->
+</head>
+<body>
+    <nav>
+        <div class="nav-title">
+            <p>간호보조 로봇 통합 모니터링 시스템</p>
+        </div>
+        <div class="nav-right">
+            <button>관리자</button>
+            <button onclick="location.href='/'">로그아웃</button>
+            <span>현재시간</span>
+            <span class="nav-time"></span>
+        </div>
+    </nav>
+    
+    <div class="main-tap-area">
+        <ul class="list">
+            <li class="tab-button tab-show">상황판</li>
+            <li class="tab-button">실시간 상황</li>
+            <li class="tab-button">데이터 통계</li>
+            <li class="tab-button">사용자 관리</li>
+            <li class="tab-button">관리자 모드</li>
+            <li class="tab-button">체온정보</li>
+        </ul>
+    </div>
+    <div class="tab-page show">
+        <div class="world-map-area">
+         <!--<canvas id="canvas" class="world-map-canvas"></canvas>-->
+            <div class="map1" onclick="updateTable('2병동')"></div>
+            <div class="map2" onclick="updateTable('3병동')"></div>
+            <div class="map3" onclick="updateTable('4병동')"></div>
+            <div class="map4" onclick="updateTable('5병동')"></div>
+            <div class="map5" onclick="updateTable('6병동')"></div>
+            <div class="map6" onclick="updateTable('7병동')"></div>
+        </div>
+        <div class="main-title">
+            <p>실시간 종합 상황</p>
+            <div class="main-title-table">
+                <p>등록 002 대, 운행 002 대, 고장 000 대, 수리 000 대</p>
+            </div>
+        </div>
+        <div class="main-middle-title">
+            <p>실시간 병동별 종합 상황</p>
+            <div class="main-middle-table">
+                <table class="t1">
+                    <colgroup>
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                    </colgroup>
+                    <thead>
+                        <tr height="50">
+                            <th>병동명</th>
+                            <th>운행 병실 수</th>
+                            <th>등록 대수</th>
+                            <th>운행 대수</th>
+                            <th>고장 대수</th>
+                            <th>수리 대수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="location-tbody">
+                        <tr height="50">
+                            <td id="ward-name">부천다온요양병원 2병동</td>
+                            <td id="room-count">00</td>
+                            <td id="total_count">00</td>
+                            <td id="operating_count">00</td>
+                            <td id="broken_count">00</td>
+                            <td id="repair_count">00</td>
+                        </tr>
+                </table>
+            </div>
+        </div>
+        <div class="main-alert-title">
+            <p>종합 모니터링 현황</p>
+            <div class="alert-button-area">
+                <button>전체</button>
+                <button>알림</button>
+                <button>로봇</button>
+                <button>기타</button>
+                <select>
+                    <option>병동선택</option>
+                    <option>제 1병동</option>
+                    <option>제 2병동</option>
+                    <option>제 3병동</option>
+                </select>
+            </div>
+            <div class="alert-table">
+                <table class="t2">
+                    <colgroup>
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                        <col style="width: auto;">
+                    </colgroup>
+                    <thead>
+                        <tr height="50">
+                            <th>알림</th>
+                            <th>로봇</th>
+                            <th>발생 장소</th>
+                            <th>발생 시간</th>
+                            <th>지속 시간</th>
+                            <th>지연알림</th>
+                            <th>조치자</th>
+                            <th>조치</th>
+                            <th>비고1</th>
+                            <th>비고2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="total_alert_table2">
+                        <tr height="50">
+                            <td>운행중지</td>
+                            <td>001</td>
+                            <td>부천다온요양병원 2병동 201</td>
+                            <td>07:00</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>욕창</td>
+                            <td>003</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>낙상</td>
+                            <td>001</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>낙상</td>
+                            <td>002</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>003</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr height="50">
+                            <td>멈춤 상태</td>
+                            <td>005</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="tab-page" id="camera-data">
+        <div class="live-up-area">
+            <div class="live-up-left">
+                <div class="live-list-button">
+                    <button>로봇 리스트</button>
+                    <button>병원 리스트</button>
+                </div>
+                <div class="live-list-table">
+                    <table class="t3">
+                        <colgroup>
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                        </colgroup>
+                        <thead>
+                            <tr height="35">
+                                <th>번호</th>
+                                <th>운행병동</th>
+                                <th>운행병실</th>
+                                <th>최초설치일</th>
+                            </tr>
+                        </thead>
+                        <tbody id="location-robo-tbody">
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            
+                    </table>
+                </div>
+            </div>
+            <div class="live-up-right">
+                <div class="live-map-area">
+                    <p>실시간 상황</p>
+                    <div class="live-map-left">
+                        <div class="live-map-title">
+                            <p>2병동</p>
+                        </div>
+                        <div class="live-map" id="liveMap">
+                            <canvas id="robotCanvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="live-map-right">
+                        <div class="live-map-detail-area">
+                            <div class="live-map-detail">
+                            <table class="t4">
+                                <colgroup>
+                                    <col style="width: auto;">
+                                    <col style="width: auto;">
+                                </colgroup>
+                                <thead>
+                                    <tr height="20">
+                                        <th>* 알림 상황</th>
+                                        <th>* 로봇 정보</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr height="50">
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr height="50">
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr height="50">
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                        <div class="live-map-camera">
+                            <div class="live-robo-camera">
+                                <P>카메라영상위치</P>
+                            </div>
+                            <div class="live-temp-camera">
+                                <div class="snapshot">
+                                    <div class="temperature"></div>
+                                    <div class="temtime"></div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="live-down-area">
+                <div class="alert-button-area">
+                    <button>전체</button>
+                    <button>알림</button>
+                    <button>로봇</button>
+                    <button>기타</button>
+                    <select>
+                        <option>병동선택</option>
+                        <option>제 1병동</option>
+                        <option>제 2병동</option>
+                        <option>제 3병동</option>
+                    </select>
+                </div>
+                <div class="alert-table-second">
+                    <table class="t22">
+                        <colgroup>
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                            <col style="width: auto;">
+                        </colgroup>
+                        <thead>
+                            <tr height="50">
+                                <th>알림</th>
+                                <th>로봇</th>
+                                <th>발생 장소</th>
+                                <th>발생 시간</th>
+                                <th>지속 시간</th>
+                                <th>지연알림</th>
+                                <th>조치자</th>
+                                <th>조치</th>
+                                <th>비고1</th>
+                                <th>비고2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="total_alert_table">
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr height="50">
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-page">
+        <div class="data-left-box">
+            <p class="data-p">센서 데이터</p>
+            <div id="sensor" class="data-box">
+
+            </div>
+        </div>
+        <div class="data-center-box">
+            <p class="data-p">로봇 데이터</p>
+            <div id="robot" class="data-box"></div>
+        </div>
+        <div class="data-right-box">
+            <p class="data-p">낙상 데이터</p>
+            <div id="vision" class="data-box">
+
+            </div>
+        </div>
+    </div>
+    <div class="tab-page">
+        사용자 관리
+    </div>
+    <div class="tab-page">
+        관리자 모드
+    </div>
+    <div class="tab-page" id="temperature-data">
+        <div class="tem-box">
+            <div class="tem-photo-box">
+                <div class="tem-photo">
+                    <div class="tem-temp"></div>
+                    <div class="tem-time"></div>
+                </div>
+            </div>
+            <div class="tem-detail">
+                
+            </div>
+        </div> 
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/temp.js') }}"></script>
+</body>
+</html>

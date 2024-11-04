@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다각형 영역 확인</title>
+    <style>
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10; /* 이미지 위에 나타나도록 설정 */
+        }
+        #container {
+            position: relative;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<h2>다각형 영역 확인</h2>
+
+<div id="container">
+    <!-- 이미지 -->
+    <img src="../img/map_korea.gif" alt="이미지 맵" usemap="#regionmap">
+    <!-- 캔버스 (선 그리기용) -->
+    <canvas id="canvas" width="245" height="328"></canvas>
+</div>
+
+<!-- 이미지맵 -->
+<map name="regionmap">
+    <area shape="poly" coords="115,254,113,246,111,237,108,232,104,227,103,221,101,216,104,212,104,207,101,201,101,196,103,190,105,185,110,182,113,180,117,180,122,182,126,186,129,189,129,193,133,197,137,197,141,197,147,196,151,197,156,200,162,200,167,199,171,196,175,196,172,199,173,203,178,205,182,208,186,208,184,210,180,213,175,216,169,219,167,223,164,229,157,227,154,225,148,230,145,235,147,240,151,241,156,239,157,236,162,235,162,237,160,241,162,244,163,247,160,250,157,256,152,256,145,254,141,249,135,247,130,248,126,249,125,253,125,257,119,254" 
+          href="#" alt="경남" onclick="showMessage('경남')">
+</map>
+
+<!-- 메시지 출력 -->
+<div id="message"></div>
+
+<script>
+    // 좌표들을 캔버스에 그리기
+    const coords = [115,254,113,246,111,237,108,232,104,227,103,221,101,
+    216,104,212,104,207,101,201,101,196,103,190,105,185,110,182,113,180,
+    117,180,122,182,126,186,129,189,129,193,133,197,137,197,141,197,147,
+    196,151,197,156,200,162,200,167,199,171,196,175,196,172,199,173,203,
+    178,205,182,208,186,208,184,210,180,213,175,216,169,219,167,223,164,
+    229,157,227,154,225,148,230,145,235,147,240,151,241,156,239,157,236,
+    162,235,162,237,160,241,162,244,163,247,160,250,157,256,152,256,145,
+    254,141,249,135,247,130,248,126,249,125,253,125,257,119,254];
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // 다각형 경계선 그리기
+    ctx.beginPath();
+    ctx.moveTo(coords[0], coords[1]);
+
+    for (let i = 2; i < coords.length; i += 2) {
+        ctx.lineTo(coords[i], coords[i + 1]);
+    }
+    ctx.closePath();
+
+    // 내부 색상 설정 (붉은색, 반투명)
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.1)'; // 투명도 0.3
+    ctx.fill();  // 내부를 채우기
+
+    // 경계선 스타일 설정
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // 경계선 투명도 0.7
+    ctx.lineWidth = 4;
+    ctx.stroke(); // 경계선 그리기
+
+    // 캔버스를 지우기 (마우스가 영역을 벗어날 때)
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 메시지 출력 함수
+    function showMessage(region) {
+        document.getElementById('message').innerText = region + ' 영역이 선택되었습니다.';
+    }
+</script>
+
+</body>
+</html>
