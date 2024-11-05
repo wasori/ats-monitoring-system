@@ -57,6 +57,6 @@ fetchtemp()
 
 setInterval(fetchtemp,5000)
 setInterval(fetchData, 5000);
-setInterval(fetch_sensor,5000);
-setInterval(fetch_vision,5000);
-setInterval(fetch_robot,5000);
+// setInterval(fetch_sensor,5000);
+// setInterval(fetch_vision,5000);
+// setInterval(fetch_robot,5000);

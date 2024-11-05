@@ -100,6 +100,8 @@ def start_mqtt_client():
 
     return client
 
+####################################################################
+
 # Flask 라우팅
 @app.route('/')
 def index():
@@ -108,6 +110,8 @@ def index():
 @app.route('/main')
 def main():
     return render_template('main.html')  # main.html 렌더링
+
+####################################################################
 
 @app.route('/data', methods=['GET'])
 def get_data():
@@ -160,6 +164,21 @@ def get_robo_data():
     db = base.globalDB()
     db.connecter()
     result = db.select_robot_regist(hospital_name,ward)
+    print(result)
+    # JSON 형식으로 결과 반환
+    return jsonify({
+        'total_count': result['total_count'],
+        'operating_count': result['operating_count'],
+        'broken_count': result['broken_count'],
+        'repair_count': result['repair_count']
+    })
+
+@app.route('/get_robo_count_all', methods=['GET'])
+def get_robo_count_all():
+    hospital_name =  request.args.get('hospital_name')
+    db = base.globalDB()
+    db.connecter()
+    result = db.select_robot_count_all(hospital_name)
     print(result)
     # JSON 형식으로 결과 반환
     return jsonify({

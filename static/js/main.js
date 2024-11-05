@@ -18,333 +18,362 @@ ctx.scale(devicePixelRatio, devicePixelRatio);
 const robotPositions = {}; // robot_id를 키로 사용하여 각 로봇의 위치를 저장
 
 socket.on("robot_position", (data) => {
-    const { robot_id, x, y } = data;
-    // 로봇의 위치 업데이트
-    robotPositions[robot_id] = { x, y };
+  const { robot_id, x, y } = data;
+  // 로봇의 위치 업데이트
+  robotPositions[robot_id] = { x, y };
 
-    // 캔버스를 다시 그리기
-    drawRobots();
+  // 캔버스를 다시 그리기
+  drawRobots();
 });
 
 // 모든 로봇을 캔버스에 그리는 함수
 function drawRobots() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스 초기화
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스 초기화
 
-    for (const robot_id in robotPositions) {
-        const { x, y } = robotPositions[robot_id];
-        drawRobot(x, y); // 각 로봇 위치 그리기
-    }
+  for (const robot_id in robotPositions) {
+    const { x, y } = robotPositions[robot_id];
+    drawRobot(x, y); // 각 로봇 위치 그리기
+  }
 }
 
 // 개별 로봇을 점으로 그리는 함수
 function drawRobot(x, y) {
-    const radius = 7; // 반지름을 늘림
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = "red";
-    ctx.fill();
+  const radius = 7; // 반지름을 늘림
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "red";
+  ctx.fill();
 
-    ctx.lineWidth = 1; // 더 두꺼운 테두리
-    ctx.strokeStyle = "red";
-    ctx.stroke();
+  ctx.lineWidth = 1; // 더 두꺼운 테두리
+  ctx.strokeStyle = "red";
+  ctx.stroke();
 
-    ctx.closePath();
+  ctx.closePath();
 }
 
 function fetchData() {
-    fetch("/data")
-        .then((response) => response.json()) // JSON 형식으로 응답 파싱
-        .then((data) => {
-            const snapshotDiv = document.querySelector(".snapshot");
-            const temperatureDiv = document.querySelector(".temperature");
-            const temptimeeDiv = document.querySelector(".temtime");
+  fetch("/data")
+    .then((response) => response.json()) // JSON 형식으로 응답 파싱
+    .then((data) => {
+      const snapshotDiv = document.querySelector(".snapshot");
+      const temperatureDiv = document.querySelector(".temperature");
+      const temptimeeDiv = document.querySelector(".temtime");
 
-            // snapshot이 base64 이미지라면 background 이미지로 설정
-            const snapshotData = `data:image/png;base64,${data[0].snapshot}`;
-            snapshotDiv.style.backgroundImage = `url(${snapshotData})`;
+      // snapshot이 base64 이미지라면 background 이미지로 설정
+      const snapshotData = `data:image/png;base64,${data[0].snapshot}`;
+      snapshotDiv.style.backgroundImage = `url(${snapshotData})`;
 
-            // 온도 데이터를 표시
-            temperatureDiv.innerText = `${data[0].temperature} °C`;
-            temptimeeDiv.innerText = `${data[0].uptime}`;
-        })
-        .catch((error) => {
-            console.error("Error fetching data:", error);
-        });
+      // 온도 데이터를 표시
+      temperatureDiv.innerText = `${data[0].temperature} °C`;
+      temptimeeDiv.innerText = `${data[0].uptime}`;
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 }
 
 // 병동에 따라 live-map 이미지 업데이트
 function updateLiveMapImage(ward, hospitalName) {
-    getImageUrl(hospitalName, ward)
-        .then(imageUrl => {
-            if (imageUrl) {
-                const liveMapDiv = document.querySelector(".live-map");
-                liveMapDiv.style.backgroundImage = `url(${imageUrl})`;
-            }
-        });
+  getImageUrl(hospitalName, ward).then((imageUrl) => {
+    if (imageUrl) {
+      const liveMapDiv = document.querySelector(".live-map");
+      liveMapDiv.style.backgroundImage = `url(${imageUrl})`;
+    }
+  });
 }
 
 function getImageUrl(hospitalName, ward) {
-    return fetch(`/get_image_url?hospital_name=${encodeURIComponent(hospitalName)}&floor=${encodeURIComponent(ward)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.url) {
-                return data.url; // URL이 있으면 반환
-            } else {
-                throw new Error("이미지를 찾을 수 없습니다.");
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching image URL:", error);
-            return null; // 오류 발생 시 null 반환
-        });
+  return fetch(
+    `/get_image_url?hospital_name=${encodeURIComponent(
+      hospitalName
+    )}&floor=${encodeURIComponent(ward)}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data && data.url) {
+        return data.url; // URL이 있으면 반환
+      } else {
+        throw new Error("이미지를 찾을 수 없습니다.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching image URL:", error);
+      return null; // 오류 발생 시 null 반환
+    });
 }
 
 function loadHospitalImages() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hospitalName = urlParams.get("hospital_name");
+  const urlParams = new URLSearchParams(window.location.search);
+  const hospitalName = urlParams.get("hospital_name");
 
-    fetch(`/get_images?hospital_name=${hospitalName}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const worldMapArea = document.querySelector(".world-map-area"); // .world-map-area 선택
-            worldMapArea.innerHTML = ''; // 기존 내용 초기화
+  fetch(`/get_images?hospital_name=${hospitalName}`)
+    .then((response) => response.json())
+    .then((data) => {
+      // console.log(data)
+      const worldMapArea = document.querySelector(".world-map-area"); // .world-map-area 선택
+      worldMapArea.innerHTML = ""; // 기존 내용 초기화
 
-            data.images.forEach((imageData, index) => {
-                const mapDiv = document.createElement("div");
-                mapDiv.className = `maplist`;
-                mapDiv.style.backgroundImage = `url(${imageData.url})`;
-                mapDiv.onclick = () => updateTable(`${imageData.floor}병동`); // floor 값을 사용
+      data.images.forEach((imageData, index) => {
+        const mapDiv = document.createElement("div");
+        mapDiv.className = `maplist`;
+        mapDiv.style.backgroundImage = `url(${imageData.url})`;
+        mapDiv.onclick = () => updateTable(`${imageData.floor}병동`); // floor 값을 사용
 
-                worldMapArea.appendChild(mapDiv);
-            });
-        })
-        .catch(error => console.error('Error fetching images:', error));
+        worldMapArea.appendChild(mapDiv);
+      });
+    })
+    .catch((error) => console.error("Error fetching images:", error));
 }
 
 function calculateDurationAndAlert(uptime) {
-    const uptimeDate = new Date(uptime.replace(" ", "T")); // 업타임을 Date 객체로 변환
-    const now = new Date();
-    const diffMs = now - uptimeDate; // 밀리초 차이 계산
+  const uptimeDate = new Date(uptime.replace(" ", "T")); // 업타임을 Date 객체로 변환
+  const now = new Date();
+  const diffMs = now - uptimeDate; // 밀리초 차이 계산
 
-    const diffMinutes = Math.floor(diffMs / (1000 * 60)); // 분 단위로 변환
-    const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000); // 초 단위로 변환
+  const diffMinutes = Math.floor(diffMs / (1000 * 60)); // 분 단위로 변환
+  const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000); // 초 단위로 변환
 
-    // 두 자리 형식으로 표시하고 공백 추가
-    const duration = `${String(diffMinutes).padStart(2, "0")} : ${String(
-        diffSeconds
-    ).padStart(2, "0")}`;
+  // 두 자리 형식으로 표시하고 공백 추가
+  const duration = `${String(diffMinutes).padStart(2, "0")} : ${String(
+    diffSeconds
+  ).padStart(2, "0")}`;
 
-    let alertLevel = "-";
-    if (diffMinutes >= 3) {
-        alertLevel = "경고";
-    } else if (diffMinutes >= 1) {
-        alertLevel = "주의";
-    }
+  let alertLevel = "-";
+  if (diffMinutes >= 3) {
+    alertLevel = "경고";
+  } else if (diffMinutes >= 1) {
+    alertLevel = "주의";
+  }
 
-    return { duration, alertLevel };
+  return { duration, alertLevel };
 }
 
 function updateTime() {
-    let today = new Date();
+  let today = new Date();
 
-    let hours = today.getHours(); // 시
-    let minutes = today.getMinutes(); // 분
-    let seconds = today.getSeconds(); // 초
+  let hours = today.getHours(); // 시
+  let minutes = today.getMinutes(); // 분
+  let seconds = today.getSeconds(); // 초
 
-    // 시간이 한 자리일 경우 앞에 0을 추가해주는 코드
-    hours = hours < 10 ? "0" + hours : hours;
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    seconds = seconds < 10 ? "0" + seconds : seconds;
+  // 시간이 한 자리일 경우 앞에 0을 추가해주는 코드
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
 
-    // .nav-time 요소에 시간을 표시
-    $(".nav-time").text(hours + ":" + minutes + ":" + seconds);
+  // .nav-time 요소에 시간을 표시
+  $(".nav-time").text(hours + ":" + minutes + ":" + seconds);
 }
 
 for (let i = 0; i < $(".tab-button").length; i++) {
-    $(".tab-button")
-        .eq(i)
-        .on("click", function () {
-            $(".tab-button").removeClass("tab-show");
-            $(".tab-button").eq(i).addClass("tab-show");
-            $(".tab-page").removeClass("show");
-            $(".tab-page").eq(i).addClass("show");
-        });
+  $(".tab-button")
+    .eq(i)
+    .on("click", function () {
+      $(".tab-button").removeClass("tab-show");
+      $(".tab-button").eq(i).addClass("tab-show");
+      $(".tab-page").removeClass("show");
+      $(".tab-page").eq(i).addClass("show");
+    });
+}
+
+function mainTotalCount() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const hospitalId = urlParams.get("hospital_name"); // URL 파라미터에서 hospital_name 가져오기
+
+  fetch(`/get_robo_count_all?hospital_name=${hospitalId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
+      document.getElementById("total_count_all").innerText = data.total_count; // 전체 등록된 로봇 수
+      document.getElementById("operating_count_all").innerText = data.operating_count; // 운행 중인 로봇 수
+      document.getElementById("broken_count_all").innerText = data.broken_count; // 고장난 로봇 수
+      document.getElementById("repair_count_all").innerText = data.repair_count; // 수리 중인 로봇 수
+    });
 }
 
 function updateTable(wardName) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hospitalId = urlParams.get("hospital_name"); // URL 파라미터에서 hospital_name 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  const hospitalId = urlParams.get("hospital_name"); // URL 파라미터에서 hospital_name 가져오기
 
-    // 병원 이름을 서버에서 가져오기 위한 API 호출
-    fetch(`/get_hospital_name?hospital_name=${hospitalId}`) // hospital_id를 사용하여 병원 이름 가져오기
-        .then((response) => response.json())
-        .then((hospitalData) => {
-            // 병원 이름을 ward-name 요소에 설정
-            document.getElementById("ward-name").innerText = `${hospitalData.hospital_name} ${wardName}`;
+  // 병원 이름을 서버에서 가져오기 위한 API 호출
+  fetch(`/get_hospital_name?hospital_name=${hospitalId}`) // hospital_id를 사용하여 병원 이름 가져오기
+    .then((response) => response.json())
+    .then((hospitalData) => {
+      // 병원 이름을 ward-name 요소에 설정
+      document.getElementById(
+        "ward-name"
+      ).innerText = `${hospitalData.hospital_name} ${wardName}`;
 
-            // 서버에서 병동 데이터를 가져오기 위한 API 호출, 병원 이름을 함께 전송
-            return fetch(`/get_hos_data?ward=${wardName}&hospital_name=${encodeURIComponent(hospitalData.hospital_name)}`);
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
-            document.getElementById("room-count").innerText = data.count; // 병실 수를 업데이트
+      // 서버에서 병동 데이터를 가져오기 위한 API 호출, 병원 이름을 함께 전송
+      return fetch(
+        `/get_hos_data?ward=${wardName}&hospital_name=${encodeURIComponent(
+          hospitalData.hospital_name
+        )}`
+      );
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
+      document.getElementById("room-count").innerText = data.count; // 병실 수를 업데이트
 
-            // 여기서 병원 이름을 함께 전송하여 로봇 등록 데이터를 가져오는 API 호출
-            return fetch(`/get_robo_regist_data?ward=${wardName}&hospital_name=${encodeURIComponent(data.hospital_name)}`);
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
-            document.getElementById("total_count").innerText = data.total_count; // 전체 등록된 로봇 수
-            document.getElementById("operating_count").innerText = data.operating_count; // 운행 중인 로봇 수
-            document.getElementById("broken_count").innerText = data.broken_count; // 고장난 로봇 수
-            document.getElementById("repair_count").innerText = data.repair_count; // 수리 중인 로봇 수
-        })
-        .catch((error) => {
-            console.error("Error fetching data:", error);
-        });
+      // 여기서 병원 이름을 함께 전송하여 로봇 등록 데이터를 가져오는 API 호출
+      return fetch(
+        `/get_robo_regist_data?ward=${wardName}&hospital_name=${encodeURIComponent(
+          hospitalId
+        )}`
+      );
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
+      document.getElementById("total_count").innerText = data.total_count; // 전체 등록된 로봇 수
+      document.getElementById("operating_count").innerText =
+        data.operating_count; // 운행 중인 로봇 수
+      document.getElementById("broken_count").innerText = data.broken_count; // 고장난 로봇 수
+      document.getElementById("repair_count").innerText = data.repair_count; // 수리 중인 로봇 수
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 }
 
 function updateRoboTable() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hospitalName = urlParams.get("hospital_name");
+  const urlParams = new URLSearchParams(window.location.search);
+  const hospitalName = urlParams.get("hospital_name");
 
-    fetch(
-        `/get_robo_regist_all_data?hospital_name=${encodeURIComponent(
-            hospitalName
-        )}`
-    )
-        .then((response) => response.json())
-        .then((text) => {
-            const data = JSON.parse(text);
+  fetch(
+    `/get_robo_regist_all_data?hospital_name=${encodeURIComponent(
+      hospitalName
+    )}`
+  )
+    .then((response) => response.json())
+    .then((text) => {
+      const data = JSON.parse(text);
 
-            const tbody = document.getElementById("location-robo-tbody");
-            tbody.innerHTML = ""; // 테이블 초기화
+      const tbody = document.getElementById("location-robo-tbody");
+      tbody.innerHTML = ""; // 테이블 초기화
 
-            // 기존 테이블의 최대 행 수 (예: 10)
-            const maxRows = 20;
+      // 기존 테이블의 최대 행 수 (예: 10)
+      const maxRows = 20;
 
-            // 데이터를 테이블에 추가
-            for (let i = 0; i < maxRows; i++) {
-                const row = document.createElement("tr");
-                row.setAttribute("id", `robo-row-${i}`);
+      // 데이터를 테이블에 추가
+      for (let i = 0; i < maxRows; i++) {
+        const row = document.createElement("tr");
+        row.setAttribute("id", `robo-row-${i}`);
 
-                if (i < data.length) {
-                    const item = data[i];
-                    const uptimeString = item.uptime.replace(" ", "T"); // 공백을 T로 변환
-                    const date = new Date(uptimeString);
-                    // 날짜 유효성 검사
-                    const formattedDate = isNaN(date.getTime())
-                        ? "-"
-                        : date.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
+        if (i < data.length) {
+          const item = data[i];
+          const uptimeString = item.uptime.replace(" ", "T"); // 공백을 T로 변환
+          const date = new Date(uptimeString);
+          // 날짜 유효성 검사
+          const formattedDate = isNaN(date.getTime())
+            ? "-"
+            : date.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
 
-                    row.innerHTML = `
+          row.innerHTML = `
                       <td>${item.robot_id}</td>
                       <td>${item.ward}</td>
                       <td>${item.room}</td>
                       <td>${formattedDate}</td>
                   `;
 
-                    row.addEventListener("click", () => {
-                        updateLiveMapImage(item.ward, hospitalName);
-                    });
-                } else {
-                    // 데이터가 없는 경우 빈 행 추가
-                    row.innerHTML = `
+          row.addEventListener("click", () => {
+            updateLiveMapImage(item.ward, hospitalName);
+          });
+        } else {
+          // 데이터가 없는 경우 빈 행 추가
+          row.innerHTML = `
                       <td>-</td>
                       <td>-</td>
                       <td>-</td>
                       <td>-</td>
                   `;
-                }
+        }
 
-                // Hover 이벤트 리스너 추가
-                row.addEventListener("mouseover", () => {
-                    row.style.backgroundColor = "rgb(44, 55, 75)"; // 호버 시 배경색 변경
-                });
-                row.addEventListener("mouseout", () => {
-                    row.style.backgroundColor = ""; // 호버 해제 시 배경색 초기화
-                });
-
-                tbody.appendChild(row); // 테이블에 행 추가
-            }
-            // 데이터가 있는 경우 첫 번째 행의 ward로 이미지 업데이트
-            if (data.length > 0) {
-                const firstItem = data[0]; // 첫 번째 아이템
-                updateLiveMapImage(firstItem.ward, hospitalName); // 최초 이미지 업데이트
-            }
-        })
-        .catch((error) => {
-            console.error("Error fetching data:", error);
+        // Hover 이벤트 리스너 추가
+        row.addEventListener("mouseover", () => {
+          row.style.backgroundColor = "rgb(44, 55, 75)"; // 호버 시 배경색 변경
         });
+        row.addEventListener("mouseout", () => {
+          row.style.backgroundColor = ""; // 호버 해제 시 배경색 초기화
+        });
+
+        tbody.appendChild(row); // 테이블에 행 추가
+      }
+      // 데이터가 있는 경우 첫 번째 행의 ward로 이미지 업데이트
+      if (data.length > 0) {
+        const firstItem = data[0]; // 첫 번째 아이템
+        updateLiveMapImage(firstItem.ward, hospitalName); // 최초 이미지 업데이트
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 }
 
 function get_total_alert_Table(tbodyId) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hospitalName = urlParams.get("hospital_name");
+  const urlParams = new URLSearchParams(window.location.search);
+  const hospitalName = urlParams.get("hospital_name");
 
-    if (!hospitalName) {
-        console.error("Hospital name is not defined in the URL parameters.");
-        return;
-    }
+  if (!hospitalName) {
+    console.error("Hospital name is not defined in the URL parameters.");
+    return;
+  }
 
-    fetch(
-        `/get_total_alert_data?hospital_name=${encodeURIComponent(hospitalName)}`
-    )
-        .then((response) => response.json())
-        .then((data) => {
-            //   console.log(data);
+  fetch(
+    `/get_total_alert_data?hospital_name=${encodeURIComponent(hospitalName)}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      //   console.log(data);
 
-            const tbody = document.getElementById(tbodyId);
-            tbody.innerHTML = ""; // 테이블 초기화
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = ""; // 테이블 초기화
 
-            // 기존 테이블의 최대 행 수 (예: 20)
-            const maxRows = 20;
+      // 기존 테이블의 최대 행 수 (예: 20)
+      const maxRows = 20;
 
-            // 데이터를 뒤집어서 최신 정보가 위에 오도록 함
-            const reversedData = data.reverse();
+      // 데이터를 뒤집어서 최신 정보가 위에 오도록 함
+      const reversedData = data.reverse();
 
-            // 데이터를 테이블에 추가
-            for (let i = 0; i < maxRows; i++) {
-                const row = document.createElement("tr");
+      // 데이터를 테이블에 추가
+      for (let i = 0; i < maxRows; i++) {
+        const row = document.createElement("tr");
 
-                if (i < reversedData.length) {
-                    const item = reversedData[i];
-                    // `name` 또는 `comment`가 존재하면 duration과 alertLevel 계산을 건너뜀
-                    let duration, alertLevel;
-                    if (item.name || item.comment) {
-                        duration = item.duration || "-"; // 기존 duration 값 사용
-                        alertLevel = item.alertLevel || "-"; // 기존 alertLevel 값 사용
-                    } else {
-                        // `name`과 `comment`가 없을 때만 duration과 alertLevel 계산
-                        ({ duration, alertLevel } = calculateDurationAndAlert(item.uptime));
-                    }
+        if (i < reversedData.length) {
+          const item = reversedData[i];
+          // `name` 또는 `comment`가 존재하면 duration과 alertLevel 계산을 건너뜀
+          let duration, alertLevel;
+          if (item.name || item.comment) {
+            duration = item.duration || "-"; // 기존 duration 값 사용
+            alertLevel = item.alertLevel || "-"; // 기존 alertLevel 값 사용
+          } else {
+            // `name`과 `comment`가 없을 때만 duration과 alertLevel 계산
+            ({ duration, alertLevel } = calculateDurationAndAlert(item.uptime));
+          }
 
-                    // content 변환 로직
-                    let content;
-                    switch (item.content) {
-                        case "water":
-                            content = "물감지";
-                            break;
-                        case "fire":
-                            content = "화재감지";
-                            break;
-                        case "dust":
-                            content = "먼지감지";
-                            break;
-                        case "pose":
-                            content = "욕창";
-                            break;
-                        case "down":
-                            content = "낙상";
-                            break;
-                        default:
-                            content = item.content; // 다른 경우 원래 content 사용
-                    }
+          // content 변환 로직
+          let content;
+          switch (item.content) {
+            case "water":
+              content = "물감지";
+              break;
+            case "fire":
+              content = "화재감지";
+              break;
+            case "dust":
+              content = "먼지감지";
+              break;
+            case "pose":
+              content = "욕창";
+              break;
+            case "down":
+              content = "낙상";
+              break;
+            default:
+              content = item.content; // 다른 경우 원래 content 사용
+          }
 
-                    row.innerHTML = `
+          row.innerHTML = `
                         <td>${content}</td>
                         <td>${item.robot_id || "-"}</td>
                         <td>${item.place || "-"}</td>
@@ -357,13 +386,13 @@ function get_total_alert_Table(tbodyId) {
                         <td>${item.blank2 || "-"}</td>
                     `;
 
-                    // 클릭 이벤트 리스너 추가
-                    row.addEventListener("click", () => {
-                        openPopup(item);
-                    });
-                } else {
-                    // 데이터가 없는 경우 빈 행 추가
-                    row.innerHTML = `
+          // 클릭 이벤트 리스너 추가
+          row.addEventListener("click", () => {
+            openPopup(item);
+          });
+        } else {
+          // 데이터가 없는 경우 빈 행 추가
+          row.innerHTML = `
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
@@ -375,31 +404,31 @@ function get_total_alert_Table(tbodyId) {
                         <td>-</td>
                         <td>-</td>
                     `;
-                }
+        }
 
-                tbody.appendChild(row); // 테이블에 행 추가
-                // Hover 이벤트 리스너 추가
-                row.addEventListener("mouseover", () => {
-                    row.style.backgroundColor = "rgb(44, 55, 75)"; // 호버 시 배경색 변경
-                });
-                row.addEventListener("mouseout", () => {
-                    row.style.backgroundColor = ""; // 호버 해제 시 배경색 초기화
-                });
-            }
-        })
-        .catch((error) => {
-            console.error("Error fetching data:", error);
+        tbody.appendChild(row); // 테이블에 행 추가
+        // Hover 이벤트 리스너 추가
+        row.addEventListener("mouseover", () => {
+          row.style.backgroundColor = "rgb(44, 55, 75)"; // 호버 시 배경색 변경
         });
+        row.addEventListener("mouseout", () => {
+          row.style.backgroundColor = ""; // 호버 해제 시 배경색 초기화
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 }
 
 // 팝업 열기 함수
 function openPopup(item) {
-    console.log(item);
-    // 팝업 HTML 구조 생성
-    const popup = document.createElement("div");
-    popup.classList.add("popup-overlay");
+  console.log(item);
+  // 팝업 HTML 구조 생성
+  const popup = document.createElement("div");
+  popup.classList.add("popup-overlay");
 
-    popup.innerHTML = `
+  popup.innerHTML = `
       <div class="popup-content">
         <p>조치 정보 입력</p>
         <div class="popup-body">
@@ -414,16 +443,16 @@ function openPopup(item) {
       </div>
     `;
 
-    // 팝업을 body에 추가
-    document.body.appendChild(popup);
+  // 팝업을 body에 추가
+  document.body.appendChild(popup);
 }
 
 // 팝업 닫기 함수
 function closePopup() {
-    const popup = document.querySelector(".popup-overlay");
-    if (popup) {
-        popup.remove();
-    }
+  const popup = document.querySelector(".popup-overlay");
+  if (popup) {
+    popup.remove();
+  }
 }
 // ////////////////////////////////////////////////////////////////////////
 // ////////////////////////////////////////////////////////////////////////
@@ -850,12 +879,13 @@ function closePopup() {
 
 // 최초 시간 업로드
 window.onload = function () {
-    const initialWardName = "2병동"; // 초기값 설정
-    updateTable(initialWardName); // updateTable 함수 호출
-    updateRoboTable();
-    get_total_alert_Table("total_alert_table");
-    get_total_alert_Table("total_alert_table2");
-    loadHospitalImages()
+  const initialWardName = "2병동"; // 초기값 설정
+  updateTable(initialWardName); // updateTable 함수 호출
+  updateRoboTable();
+  get_total_alert_Table("total_alert_table");
+  get_total_alert_Table("total_alert_table2");
+  loadHospitalImages();
+  mainTotalCount();
 };
 
 updateTime();

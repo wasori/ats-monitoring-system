@@ -41,17 +41,14 @@
     <div class="tab-page show">
         <div class="world-map-area">
          <!--<canvas id="canvas" class="world-map-canvas"></canvas>-->
-            <div class="map1" onclick="updateTable('2병동')"></div>
-            <div class="map2" onclick="updateTable('3병동')"></div>
-            <div class="map3" onclick="updateTable('4병동')"></div>
-            <div class="map4" onclick="updateTable('5병동')"></div>
-            <div class="map5" onclick="updateTable('6병동')"></div>
-            <div class="map6" onclick="updateTable('7병동')"></div>
         </div>
         <div class="main-title">
             <p>실시간 종합 상황</p>
             <div class="main-title-table">
-                <p>등록 002 대, 운행 002 대, 고장 000 대, 수리 000 대</p>
+                <p>등록 <span id="total_count_all"></span> 대 
+                    운행 <span id="operating_count_all"></span> 대
+                    고장 <span id="broken_count_all"></span> 대
+                    수리 <span id="repair_count_all"></span> 대</p>
             </div>
         </div>
         <div class="main-middle-title">

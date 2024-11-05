@@ -368,8 +368,40 @@ class globalDB:
         FROM 
             robot_regist_tb
         WHERE 
-            hospital_name = '{hospital_name}'
+            hospital_id = '{hospital_name}'
             AND ward = '{ward}'
+        """
+
+        # 쿼리 실행
+        self.cursors.execute(query)
+        receive = self.cursors.fetchone()  # 결과는 한 줄만 반환
+
+        # 결과를 딕셔너리로 반환
+        return {
+            "total_count": int(receive[0]),  # 카운트는 정수로 변환
+            "operating_count": (
+                int(receive[1]) if receive[1] is not None else 0
+            ),  # None이면 0.0으로 설정
+            "broken_count": (
+                int(receive[2]) if receive[2] is not None else 0
+            ),  # None이면 0.0으로 설정
+            "repair_count": (
+                int(receive[3]) if receive[3] is not None else 0
+            ),  # None이면 0.0으로 설정
+        }
+    
+    def select_robot_count_all(self, hospital_name):
+        # SQL 쿼리 작성
+        query = f"""
+        SELECT 
+            COUNT(*) AS total_count,
+            SUM(CASE WHEN state = '운행' THEN 1 ELSE 0 END) AS operating_count,
+            SUM(CASE WHEN state = '고장' THEN 1 ELSE 0 END) AS broken_count,
+            SUM(CASE WHEN state = '수리' THEN 1 ELSE 0 END) AS repair_count
+        FROM 
+            robot_regist_tb
+        WHERE 
+            hospital_id = '{hospital_name}'
         """
 
         # 쿼리 실행
