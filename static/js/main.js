@@ -18,7 +18,7 @@ ctx.scale(devicePixelRatio, devicePixelRatio);
 const robotPositions = {}; // robot_id를 키로 사용하여 각 로봇의 위치를 저장
 
 socket.on("robot_position", (data) => {
-  const { robot_id, x, y } = data;
+  const { robot_id, x, y, hospital_name } = data;
   // 로봇의 위치 업데이트
   robotPositions[robot_id] = { x, y };
 
@@ -80,6 +80,8 @@ function updateLiveMapImage(ward, hospitalName) {
       liveMapDiv.style.backgroundImage = `url(${imageUrl})`;
     }
   });
+  let title = document.querySelector(".live-map-title-p")
+  title.innerText = ward
 }
 
 function getImageUrl(hospitalName, ward) {
@@ -184,7 +186,8 @@ function mainTotalCount() {
     .then((data) => {
       // 응답으로 받은 데이터를 사용해 테이블의 데이터를 업데이트
       document.getElementById("total_count_all").innerText = data.total_count; // 전체 등록된 로봇 수
-      document.getElementById("operating_count_all").innerText = data.operating_count; // 운행 중인 로봇 수
+      document.getElementById("operating_count_all").innerText =
+        data.operating_count; // 운행 중인 로봇 수
       document.getElementById("broken_count_all").innerText = data.broken_count; // 고장난 로봇 수
       document.getElementById("repair_count_all").innerText = data.repair_count; // 수리 중인 로봇 수
     });
@@ -324,7 +327,7 @@ function get_total_alert_Table(tbodyId) {
   )
     .then((response) => response.json())
     .then((data) => {
-      //   console.log(data);
+      // console.log(data);
 
       const tbody = document.getElementById(tbodyId);
       tbody.innerHTML = ""; // 테이블 초기화
@@ -353,6 +356,7 @@ function get_total_alert_Table(tbodyId) {
 
           // content 변환 로직
           let content;
+          // console.log(item.content);
           switch (item.content) {
             case "water":
               content = "물감지";
@@ -385,7 +389,6 @@ function get_total_alert_Table(tbodyId) {
                         <td>${item.blank || "-"}</td>
                         <td>${item.blank2 || "-"}</td>
                     `;
-
           // 클릭 이벤트 리스너 추가
           row.addEventListener("click", () => {
             openPopup(item);
@@ -432,19 +435,71 @@ function openPopup(item) {
       <div class="popup-content">
         <p>조치 정보 입력</p>
         <div class="popup-body">
-            <label for="handler">조치자 :</label>
-            <label for="handler">${item.name}</label>
+            <label for="handler">조치자  </label>
+            <input style="margin-left: 33px; type="text" id="handler" value="${
+              item.name || ""
+            }">
         </div>
         <div class="popup-body">
-            <label for="action">조치 내용 :</label>
-            <label for="handler">${item.comment}</label>
+            <label for="action">조치내용 </label>
+            <input style="margin-left: 18px; type="text" id="action" value="${
+              item.comment || ""
+            }">
         </div>
+        <div class="popup-body">
+            <label>조치 시간</label>
+            <span id="action-time" style="margin-left: 16px;">${
+              item.action_time || "-"
+            }</span>
+        </div>
+        <button onclick="submitData('${
+          item.id
+        }')" style="margin-top: 20px;">저장</button>
         <button onclick="closePopup()" style="margin-top: 20px;">닫기</button>
       </div>
     `;
 
   // 팝업을 body에 추가
   document.body.appendChild(popup);
+}
+
+function submitData(itemId) {
+  let today = new Date();
+
+  let year = today.getFullYear();
+  let month = String(today.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1 필요
+  let day = String(today.getDate()).padStart(2, "0");
+
+  let hours = String(today.getHours()).padStart(2, "0");
+  let minutes = String(today.getMinutes()).padStart(2, "0");
+  let seconds = String(today.getSeconds()).padStart(2, "0");
+
+  // 원하는 형식으로 문자열 생성
+  let formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+  const name = document.getElementById("handler").value;
+  const comment = document.getElementById("action").value;
+
+  fetch("/input_action", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: itemId,
+      name: name,
+      comment: comment,
+      action_time: formattedDate,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Success:", data);
+      closePopup(); // Close the popup on success
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 }
 
 // 팝업 닫기 함수

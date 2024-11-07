@@ -52,11 +52,11 @@ def on_message(client, userdata, message):
                 db.insert_alarm(insertdata)
 
             if water == 1:
-                insertdata = f'{{"rid":"{jsonmsg["robot_id"]}","xaxis":"{xaxis}","yaxis":"{yaxis}","content":"dust","value":"{dust_val}","hos_name":"{hos_name}"}}'
+                insertdata = f'{{"rid":"{jsonmsg["robot_id"]}","xaxis":"{xaxis}","yaxis":"{yaxis}","content":"water","value":"1","hos_name":"{hos_name}"}}'
                 db.insert_alarm(insertdata)
 
             if fire == 1:
-                insertdata = f'{{"rid":"{jsonmsg["robot_id"]}","xaxis":"{xaxis}","yaxis":"{yaxis}","content":"dust","value":"{dust_val}","hos_name":"{hos_name}"}}'
+                insertdata = f'{{"rid":"{jsonmsg["robot_id"]}","xaxis":"{xaxis}","yaxis":"{yaxis}","content":"fire","value":"1","hos_name":"{hos_name}"}}'
                 db.insert_alarm(insertdata)
 
     elif message.topic == "aos_pose_detect_result":
@@ -101,6 +101,7 @@ def start_mqtt_client():
     return client
 
 ####################################################################
+####################################################################
 
 # Flask 라우팅
 @app.route('/')
@@ -111,6 +112,7 @@ def index():
 def main():
     return render_template('main.html')  # main.html 렌더링
 
+####################################################################
 ####################################################################
 
 @app.route('/data', methods=['GET'])
@@ -195,7 +197,7 @@ def get_hospital_name():
     db.connecter()
     
     # hospital_id로 병원 이름을 조회하는 쿼리
-    query = "SELECT hospital_name FROM robot_regist_tb WHERE hospital_id = %s"
+    query = "SELECT hospital_name FROM hospital_tb WHERE hospital_id = %s"
     db.cursors.execute(query, (hospital_id,))
     result = db.cursors.fetchone()
 
@@ -272,7 +274,24 @@ def serve_static_file(filename):
     except FileNotFoundError:
         abort(404)  # 파일이 없으면 404 에러 반환
 
-#########################################################
+@app.route('/input_action', methods=['POST'])
+def input_action():
+    data = request.get_json()
+    name = data.get('name')
+    comment = data.get('comment')
+    num = data.get('id')
+    time = data.get('action_time')
+    print(time)
+
+    db = base.globalDB()
+    db.connecter()
+    db.insertAction(name, comment, num, time)
+
+    return jsonify({"message": "Data saved successfully"})
+
+
+##########################################################
+##########################################################
 
 if __name__ == "__main__":
     db = base.globalDB()

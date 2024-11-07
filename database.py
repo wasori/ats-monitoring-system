@@ -524,6 +524,8 @@ class globalDB:
                         "comment": row[9],
                         "blank": row[10],
                         "blank2": row[11],
+                        "id" : row[0],
+                        "action_time" : row[13]
                     }
                 )
 
@@ -606,6 +608,23 @@ class globalDB:
         else:
             quarry += ") values(%s,%s,%s,%s,CURRENT_TIMESTAMP,%s)"
             arr = (rid, xaxis, yaxis, content, hos_name)
+
+        if self.cursors == "":
+            print("DB not connect")
+            self.connecter.rollback()  # type: ignore
+            return
+        else:
+            self.cursors.execute(quarry, arr)  # type: ignore
+            self.connecter.commit()  # type: ignore
+
+    def insertAction(self, name, comment, num ,time):
+
+
+        quarry = ""
+        quarry = "UPDATE alarm_data_tb SET name = %s, comment = %s, action_time = %s WHERE num = %s"
+
+        arr = ""
+        arr = (name, comment, time ,num)
 
         if self.cursors == "":
             print("DB not connect")
