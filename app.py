@@ -65,7 +65,51 @@ def on_message(client, userdata, message):
 
         db = base.globalDB()
         db.connecter()
+
+        visionjson = db.select_vision_uptime()
+        vision = json.loads(visionjson) # type: ignore
+        print(vision)
+
         db.insert_vision(message.payload)
+
+        falldown = str(jsonmsg["falldown"])
+        pose = str(jsonmsg["pose"])
+        hos_name = str(jsonmsg["hospital_name"])
+        roonbed = jsonmsg['patient_no'].split('-')
+
+        
+
+        pose = 0
+        down = 0
+        check = -1
+
+        for i in range(0,len(vision)):
+            if(vision[i]['room'] == int(roonbed[0]) and vision[i]['sickbed'] == int(roonbed[1])):
+                check = i
+                break
+
+        if check == -1:
+            pose = 0
+        else:
+            if(vision[check]['pose'] == jsonmsg['pose']):
+                pose = 1
+            else:
+                pose = 0
+
+            if(vision[check]['pose'] == "none"):
+                pose = 0
+
+        if pose == 1:
+            insertdata = '{"rid":"'+jsonmsg["robot_id"]+'","xaxis":"'+str(int(roonbed[0]))+'","yaxis":"'+str(int(roonbed[1]))
+            insertdata += '","content":"pose","value":"'+jsonmsg['pose']+'", "hos_name" : "'+ hos_name + '"}'
+            db.insert_alarm(insertdata)
+
+        if jsonmsg["falldown"] == True:
+            down = 1
+            insertdata = '{"rid":"'+jsonmsg["robot_id"]+'","xaxis":"'+str(int(roonbed[0]))+'","yaxis":"'+str(int(roonbed[1]))
+            insertdata += '","content":"down","value":"1","hos_name" : "'+ hos_name + '"}'
+            db.insert_alarm(insertdata)
+        
 
     elif message.topic == "robot_position":
         message_payload = message.payload.decode('utf-8') 

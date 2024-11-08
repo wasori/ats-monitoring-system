@@ -633,3 +633,22 @@ class globalDB:
         else:
             self.cursors.execute(quarry, arr)  # type: ignore
             self.connecter.commit()  # type: ignore
+
+    def select_vision_uptime(self):
+        items = []
+
+        quarry = "SELECT * FROM vision_data_tb v WHERE v.uptime in (SELECT MAX(uptime) uptime FROM vision_data_tb "
+        quarry += "GROUP BY room, sickbed) ORDER BY room ASC, sickbed ASC"
+
+        if self.cursors =="":
+            print("DB not connect")
+            return 
+        else:
+            self.cursors.execute(quarry) # type: ignore
+            receive = self.cursors.fetchall() # type: ignore
+
+            for row in receive:
+                items.append({'rid':row[1],'room':row[2],'sickbed':row[3],'pose':row[4],'down':row[5],'uptime':row[6]})
+
+        jsondata = json.dumps(items,default=str)
+        return jsondata
