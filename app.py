@@ -318,12 +318,17 @@ def get_total_alert_data():
 
     for item in result:
         robot_info = db.get_robot_info(item['robot_id'])
-        if robot_info:
-            ward = robot_info['ward']
-            room = robot_info['room']
-            item['place'] = f"{ward} {room}"  # '2병동 201호' 형식으로 설정
+        # "content"가 'down' 또는 'pose'인 경우 병상 좌표로 설정
+        if item["content"] in ["down", "pose"]:
+            item['place'] = f"{item['x']}호 {item['y']}병상"
         else:
-            item['place'] = "복도"  # 정보가 없을 경우 '정보 없음'으로 설정
+            # "content"가 'down' 또는 'pose'가 아닐 경우 병동과 병실 정보 설정
+            if robot_info:
+                ward = robot_info['ward']
+                room = robot_info['room']
+                item['place'] = f"{ward} {room}"  # 예: '2병동 201호' 형식
+            else:
+                item['place'] = "복도"  # 정보가 없을 경우 '복도'로 설정
 
     # JSON 형식으로 결과 반환
     return jsonify(result)

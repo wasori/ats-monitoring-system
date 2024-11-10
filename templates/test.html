@@ -12,6 +12,18 @@
             text-align: center;
         }
 
+        .input-container {
+            margin: 20px 0;
+        }
+
+        select, input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            width: 100px;
+            border-radius: 5px;
+        }
+
         .button-container {
             margin-top: 30px;
         }
@@ -34,59 +46,59 @@
     </style>
 </head>
 <body>
-    <h1>센서 보내기 페이지</h1>
+    <h1>센서 보내기</h1>
 
+    
+        <!-- 입력 필드들 -->
+        <div class="input-container">
+            <label for="hospital_name_select">병원 선택:</label>
+            <select id="hospital_name_select">
+                <option value="hyundai">hyundai</option>
+                <option value="daon">daon</option>
+                <option value="minam">minam</option>
+                <option value="sacheon">sacheon</option>
+                <option value="tongyeong">tongyeong</option>
+                <option value="ulsan">ulsan</option>
+            </select>
+    
+            <br><br>
+    
+            <label>병상 입력:</label>
+            <input type="text" id="patient_no_part1" placeholder="병동 (예: 203)">
+            -
+            <input type="text" id="patient_no_part2" placeholder="호실 (예: 1)">
+        </div>
+
+        
     <div class="button-container">
-
-        
-        <!-- Sensor 데이터 보내기 버튼 -->
-        <button id="sendSensorDataButton">센서</button>
-        
-        <!-- Pose 데이터 보내기 버튼 -->
-        <button id="sendPoseDataButton">욕창</button>
-
-
-        <button id="sendNewPoseDataButton">낙상</button>
+        <button id="water">물감지</button>
+        <button id="fire">화재감지</button>
+        <button id="dust">먼지감지</button>
+        <button id="pose">욕창</button>
+        <button id="falldown">낙상</button>
     </div>
 
     <script>
+
+        function getPatientNo() {
+            const part1 = document.getElementById("patient_no_part1").value;
+            const part2 = document.getElementById("patient_no_part2").value;
+            return `${part1}-${part2}`;
+        }
+
+        function getHospitalName() {
+            return document.getElementById("hospital_name_select").value;
+        }
+
         // Pose 데이터 보내기
-        document.getElementById("sendPoseDataButton").addEventListener("click", function() {
-            const poseData = {
-                "robot_id": "ZK99",
-                "patient_no": "204-3",
-                "falldown": false,
-                "pose": "up",
-                "x": 210,
-                "y": 167,
-                "hospital_name": "hyundai"
-            };
-
-            fetch("/send_pose_data", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(poseData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
-        });
-
-        // Sensor 데이터 보내기
-        document.getElementById("sendSensorDataButton").addEventListener("click", function() {
+        document.getElementById("water").addEventListener("click", function() {
             const sensorData = {
-                "dust(ug)": 3421,
+                "dust(ug)": 100,
                 "waterDetect": true,
-                "FireDetect": true,
+                "FireDetect": false,
                 "battery": 253,
                 "robot_id": "ZK99",
-                "hospital_name": "hyundai",
+                "hospital_name": getHospitalName(),
                 "x": "0.00",
                 "y": "0.00"
             };
@@ -107,15 +119,79 @@
             });
         });
 
-        document.getElementById("sendNewPoseDataButton").addEventListener("click", function() {
+        // Pose 데이터 보내기
+        document.getElementById("fire").addEventListener("click", function() {
+            const sensorData = {
+                "dust(ug)": 100,
+                "waterDetect": false,
+                "FireDetect": true,
+                "battery": 253,
+                "robot_id": "ZK99",
+                "hospital_name": getHospitalName(),
+                "x": "0.00",
+                "y": "0.00"
+            };
+
+            fetch("/send_sensor_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(sensorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        // Pose 데이터 보내기
+        document.getElementById("dust").addEventListener("click", function() {
+            const sensorData = {
+                "dust(ug)": 33100,
+                "waterDetect": false,
+                "FireDetect": false,
+                "battery": 253,
+                "robot_id": "ZK99",
+                "hospital_name": getHospitalName(),
+                "x": "0.00",
+                "y": "0.00"
+            };
+
+            fetch("/send_sensor_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(sensorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+
+
+        // Sensor 데이터 보내기
+        document.getElementById("falldown").addEventListener("click", function() {
             const poseData = {
                 "robot_id": "ZK99",
-                "patient_no": "204-3",
+                "patient_no": getPatientNo(),
                 "falldown": true,
                 "pose": "none",
                 "x": 210,
                 "y": 167,
-                "hospital_name": "hyundai"
+                "hospital_name": getHospitalName()
             };
 
             fetch("/send_pose_data", {
@@ -132,6 +208,34 @@
             .catch(error => {
                 console.error("Error:", error);
             });
+        });
+
+        document.getElementById("pose").addEventListener("click", function() {
+            const poseData = {
+                "robot_id": "ZK99",
+                "patient_no": getPatientNo(),
+                "falldown": false,
+                "pose": "none",
+                "x": 210,
+                "y": 167,
+                "hospital_name": getHospitalName()
+            };
+
+            fetch("/send_pose_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(poseData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+
         });
     </script>
 </body>
