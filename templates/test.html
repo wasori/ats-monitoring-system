@@ -34,17 +34,105 @@
     </style>
 </head>
 <body>
-    <h1>센서보내기페이지</h1>
+    <h1>센서 보내기 페이지</h1>
 
     <div class="button-container">
-        <!-- 버튼 클릭 시 Flask 라우트로 POST 요청 -->
-        <form action="/send_pose_data" method="POST">
-            <button type="submit">Send Pose Data</button>
-        </form>
 
-        <form action="/send_sensor_data" method="POST">
-            <button type="submit">Send Sensor Data</button>
-        </form>
+        
+        <!-- Sensor 데이터 보내기 버튼 -->
+        <button id="sendSensorDataButton">센서</button>
+        
+        <!-- Pose 데이터 보내기 버튼 -->
+        <button id="sendPoseDataButton">욕창</button>
+
+
+        <button id="sendNewPoseDataButton">낙상</button>
     </div>
+
+    <script>
+        // Pose 데이터 보내기
+        document.getElementById("sendPoseDataButton").addEventListener("click", function() {
+            const poseData = {
+                "robot_id": "ZK99",
+                "patient_no": "204-3",
+                "falldown": false,
+                "pose": "up",
+                "x": 210,
+                "y": 167,
+                "hospital_name": "hyundai"
+            };
+
+            fetch("/send_pose_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(poseData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        // Sensor 데이터 보내기
+        document.getElementById("sendSensorDataButton").addEventListener("click", function() {
+            const sensorData = {
+                "dust(ug)": 3421,
+                "waterDetect": true,
+                "FireDetect": true,
+                "battery": 253,
+                "robot_id": "ZK99",
+                "hospital_name": "hyundai",
+                "x": "0.00",
+                "y": "0.00"
+            };
+
+            fetch("/send_sensor_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(sensorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        document.getElementById("sendNewPoseDataButton").addEventListener("click", function() {
+            const poseData = {
+                "robot_id": "ZK99",
+                "patient_no": "204-3",
+                "falldown": true,
+                "pose": "none",
+                "x": 210,
+                "y": 167,
+                "hospital_name": "hyundai"
+            };
+
+            fetch("/send_pose_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(poseData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);  // 서버에서 응답 받은 메시지 출력
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+    </script>
 </body>
 </html>

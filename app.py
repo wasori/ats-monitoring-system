@@ -62,6 +62,8 @@ def on_message(client, userdata, message):
     elif message.topic == "aos_pose_detect_result":
         message_payload = message.payload.decode('utf-8') 
         jsonmsg = json.loads(message.payload)
+        
+        print(jsonmsg)
 
         db = base.globalDB()
         db.connecter()
@@ -73,6 +75,8 @@ def on_message(client, userdata, message):
         db.insert_vision(message.payload)
 
         falldown = str(jsonmsg["falldown"])
+        
+        print( falldown )
         pose_value  = str(jsonmsg["pose"])
         hos_name = str(jsonmsg["hospital_name"])
         roonbed = jsonmsg['patient_no'].split('-')
@@ -89,29 +93,44 @@ def on_message(client, userdata, message):
                 check = i
                 break
             
-        # pose 상태 확인
-        if check != -1:
-            if vision[check]['pose'] == pose_value:
-                pose = 1  # 포즈가 동일하면 1로 설정
-            elif vision[check]['pose'] == "none":
-                pose = 0  # 포즈가 없으면 0으로 설정
-        else:
-            pose = 0
+        # falldown 상태가 true일 경우, 바로 처리
+        if jsonmsg["falldown"]:
+            content = "down"
+            value = "1"
 
-        # pose 또는 falldown 상태에 따라 하나의 insert 문 생성
-        if pose == 1 or falldown:
-            content = "pose" if pose == 1 else "down"
-            value = pose_value if pose == 1 else "1"
-
-            # 하나의 insert 데이터 생성
+            # insert data 생성
             insertdata = (
-                '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+
-                '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+
+                '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+ 
+                '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+ 
                 '", "value":"'+value+'", "hos_name" : "'+hos_name+'"}'
             )
 
             print("Insert Data:", insertdata)  # 확인용 출력
             db.insert_alarm(insertdata)  # 한 번만 insert 호출
+        else:
+            # falldown이 false일 경우, pose 상태 확인
+            if check != -1:
+                if vision[check]['pose'] == pose_value:
+                    pose = 1  # 포즈가 동일하면 1로 설정
+                elif vision[check]['pose'] == "none":
+                    pose = 0  # 포즈가 없으면 0으로 설정
+            else:
+                pose = 0
+
+            # pose 상태가 1 또는 falldown이 true일 때 insert
+            if pose == 1 :
+                content = "pose" 
+                value = pose_value
+
+                # insert data 생성
+                insertdata = (
+                    '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+
+                    '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+
+                    '", "value":"'+value+'", "hos_name" : "'+hos_name+'"}'
+                )
+
+                print("Insert Data:", insertdata)  # 확인용 출력
+                db.insert_alarm(insertdata)  # 한 번만 insert 호출
 
 
     elif message.topic == "robot_position":
@@ -168,32 +187,23 @@ def test():
 
 @app.route('/send_pose_data', methods=['POST'])
 def send_pose_data():
-    pose_data = {
-        "robot_id": "ZK99",
-        "patient_no": "204-3",
-        "falldown": False,
-        "pose": "up",
-        "x": 210,
-        "y": 167,
-        "hospital_name": "daon"
-    }
-    client.publish('aos_pose_detect_result', json.dumps(pose_data))
-    return "Pose data sent!"
+    data = request.get_json()  # JSON 데이터를 받아옴
+    print("Received pose data:", data)
+    
+    # MQTT로 데이터 전송
+    client.publish("aos_pose_detect_result", json.dumps(data))
+    
+    return jsonify({"message": "Pose data sent!"})
 
 @app.route('/send_sensor_data', methods=['POST'])
 def send_sensor_data():
-    sensor_data = {
-        "dust(ug)": 342,
-        "waterDetect": True,
-        "FireDetect": True,
-        "battery": 253,
-        "robot_id": "ZK04",
-        "hospital_name": "daon",
-        "x": "0.00",
-        "y": "0.00"
-    }
-    client.publish('sensor', json.dumps(sensor_data))
-    return "Sensor data sent!"
+    data = request.get_json()  # JSON 데이터를 받아옴
+    print("Received sensor data:", data)
+    
+    # MQTT로 데이터 전송
+    client.publish("sensor", json.dumps(data))
+    
+    return jsonify({"message": "Sensor data sent!"})
 
 ##################################################################
 ##################################################################

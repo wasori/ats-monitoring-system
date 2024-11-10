@@ -208,7 +208,7 @@ class globalDB:
 
         roombed = patient.split("-")
 
-        if down == "true":
+        if down == "true" or True:
             downval = 1
 
         arr = (rid, roombed[0], roombed[1], pose, downval, hos_name)
