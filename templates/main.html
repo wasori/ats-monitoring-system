@@ -32,9 +32,9 @@
         <ul class="list">
             <li class="tab-button tab-show">상황판</li>
             <li class="tab-button">실시간 상황</li>
-            <li class="tab-button">데이터 통계</li>
-            <li class="tab-button">사용자 관리</li>
-            <li class="tab-button">관리자 모드</li>
+            <!--<li class="tab-button">데이터 통계</li>-->
+            <!--<li class="tab-button">사용자 관리</li>-->
+            <!--<li class="tab-button">관리자 모드</li>-->
             <li class="tab-button">체온정보</li>
         </ul>
     </div>
@@ -264,7 +264,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </div>  
     <div class="tab-page" id="camera-data">
         <div class="live-up-area">
             <div class="live-up-left">
@@ -698,6 +698,19 @@
             </div>
         </div>
     </div>
+    <div class="tab-page" id="temperature-data">
+        <div class="tem-box">
+            <div class="tem-photo-box">
+                <div class="tem-photo">
+                    <div class="tem-temp"></div>
+                    <div class="tem-time"></div>
+                </div>
+            </div>
+            <div class="tem-detail">
+                
+            </div>
+        </div> 
+    </div>
     <div class="tab-page">
         <div class="data-left-box">
             <p class="data-p">센서 데이터</p>
@@ -722,19 +735,7 @@
     <div class="tab-page">
         관리자 모드
     </div>
-    <div class="tab-page" id="temperature-data">
-        <div class="tem-box">
-            <div class="tem-photo-box">
-                <div class="tem-photo">
-                    <div class="tem-temp"></div>
-                    <div class="tem-time"></div>
-                </div>
-            </div>
-            <div class="tem-detail">
-                
-            </div>
-        </div> 
-    </div>
+    
     
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/camera.js') }}"></script>

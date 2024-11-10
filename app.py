@@ -73,7 +73,7 @@ def on_message(client, userdata, message):
         db.insert_vision(message.payload)
 
         falldown = str(jsonmsg["falldown"])
-        pose = str(jsonmsg["pose"])
+        pose_value  = str(jsonmsg["pose"])
         hos_name = str(jsonmsg["hospital_name"])
         roonbed = jsonmsg['patient_no'].split('-')
 
@@ -83,33 +83,36 @@ def on_message(client, userdata, message):
         down = 0
         check = -1
 
-        for i in range(0,len(vision)):
-            if(vision[i]['room'] == int(roonbed[0]) and vision[i]['sickbed'] == int(roonbed[1])):
+        # 기존의 데이터베이스에서 `room`과 `sickbed`가 일치하는 항목 찾기
+        for i in range(0, len(vision)):
+            if vision[i]['room'] == int(roonbed[0]) and vision[i]['sickbed'] == int(roonbed[1]):
                 check = i
                 break
-
-        if check == -1:
-            pose = 0
+            
+        # pose 상태 확인
+        if check != -1:
+            if vision[check]['pose'] == pose_value:
+                pose = 1  # 포즈가 동일하면 1로 설정
+            elif vision[check]['pose'] == "none":
+                pose = 0  # 포즈가 없으면 0으로 설정
         else:
-            if(vision[check]['pose'] == jsonmsg['pose']):
-                pose = 1
-            else:
-                pose = 0
+            pose = 0
 
-            if(vision[check]['pose'] == "none"):
-                pose = 0
+        # pose 또는 falldown 상태에 따라 하나의 insert 문 생성
+        if pose == 1 or falldown:
+            content = "pose" if pose == 1 else "down"
+            value = pose_value if pose == 1 else "1"
 
-        if pose == 1:
-            insertdata = '{"rid":"'+jsonmsg["robot_id"]+'","xaxis":"'+str(int(roonbed[0]))+'","yaxis":"'+str(int(roonbed[1]))
-            insertdata += '","content":"pose","value":"'+jsonmsg['pose']+'", "hos_name" : "'+ hos_name + '"}'
-            db.insert_alarm(insertdata)
+            # 하나의 insert 데이터 생성
+            insertdata = (
+                '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+
+                '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+
+                '", "value":"'+value+'", "hos_name" : "'+hos_name+'"}'
+            )
 
-        if jsonmsg["falldown"] == True:
-            down = 1
-            insertdata = '{"rid":"'+jsonmsg["robot_id"]+'","xaxis":"'+str(int(roonbed[0]))+'","yaxis":"'+str(int(roonbed[1]))
-            insertdata += '","content":"down","value":"1","hos_name" : "'+ hos_name + '"}'
-            db.insert_alarm(insertdata)
-        
+            print("Insert Data:", insertdata)  # 확인용 출력
+            db.insert_alarm(insertdata)  # 한 번만 insert 호출
+
 
     elif message.topic == "robot_position":
         message_payload = message.payload.decode('utf-8') 
@@ -156,8 +159,44 @@ def index():
 def main():
     return render_template('main.html')  # main.html 렌더링
 
+@app.route('/test')
+def test():
+    return render_template('test.html')  # main.html 렌더링
+
 ####################################################################
 ####################################################################
+
+@app.route('/send_pose_data', methods=['POST'])
+def send_pose_data():
+    pose_data = {
+        "robot_id": "ZK99",
+        "patient_no": "204-3",
+        "falldown": False,
+        "pose": "up",
+        "x": 210,
+        "y": 167,
+        "hospital_name": "daon"
+    }
+    client.publish('aos_pose_detect_result', json.dumps(pose_data))
+    return "Pose data sent!"
+
+@app.route('/send_sensor_data', methods=['POST'])
+def send_sensor_data():
+    sensor_data = {
+        "dust(ug)": 342,
+        "waterDetect": True,
+        "FireDetect": True,
+        "battery": 253,
+        "robot_id": "ZK04",
+        "hospital_name": "daon",
+        "x": "0.00",
+        "y": "0.00"
+    }
+    client.publish('sensor', json.dumps(sensor_data))
+    return "Sensor data sent!"
+
+##################################################################
+##################################################################
 
 @app.route('/data', methods=['GET'])
 def get_data():
@@ -274,7 +313,7 @@ def get_total_alert_data():
             room = robot_info['room']
             item['place'] = f"{ward} {room}"  # '2병동 201호' 형식으로 설정
         else:
-            item['place'] = "정보 없음"  # 정보가 없을 경우 '정보 없음'으로 설정
+            item['place'] = "복도"  # 정보가 없을 경우 '정보 없음'으로 설정
 
     # JSON 형식으로 결과 반환
     return jsonify(result)
