@@ -652,3 +652,31 @@ class globalDB:
 
         jsondata = json.dumps(items,default=str)
         return jsondata
+    
+    def get_robo_regist(self, hospital):
+        items = []
+        query = f"""
+            SELECT robot_id, hospital_name, ward, room, state, regist_date
+            FROM robot_regist_tb
+            WHERE hospital_id = '{hospital}'
+        """
+
+        if self.cursors == "":
+            print("DB not connected")
+            return []
+        else:
+            self.cursors.execute(query)
+            receive = self.cursors.fetchall()
+
+            for row in receive:
+                formatted_date = row[5].strftime('%Y-%m-%d %H:%M:%S') if row[4] else None
+                items.append({
+                    "robot_id": row[0],
+                    "hospital_name": row[1],
+                    "ward": row[2],
+                    "room": row[3],
+                    "state": row[4],
+                    "regist_date": formatted_date,
+                })
+
+        return items

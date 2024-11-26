@@ -387,6 +387,46 @@ def input_action():
 
     return jsonify({"message": "Data saved successfully"})
 
+@app.route('/get_robo_regist', methods=['GET'])
+def get_robo_regist():
+    hospital = request.args.get('hospital_name')
+    db = base.globalDB()
+    db.connecter()
+    result = db.get_robo_regist(hospital)
+
+    # JSON 형식으로 반환
+    return jsonify(result)
+
+@app.route('/register_robo', methods=['POST'])
+def register_robo():
+    data = request.get_json()
+
+    robot_id = data.get('robot_id')
+    hospital_name = data.get('hospital_name')
+    ward = data.get('ward')
+    room = data.get('room')
+    state = data.get('state')
+    hospital_id = data.get('hospital_id')
+
+    db = base.globalDB()
+    db.connecter()
+
+    # DB에 로봇 정보 삽입
+    query = f"""
+        INSERT INTO robot_regist_tb (robot_id, hospital_name, ward, room, state, regist_date, hospital_id)
+        VALUES ('{robot_id}', '{hospital_name}', '{ward}', '{room}', '{state}', CURRENT_TIMESTAMP, '{hospital_id}')
+    """
+
+    if db.cursors == "":
+        return jsonify({"success": False, "message": "DB not connected"})
+    
+    try:
+        db.cursors.execute(query)
+        db.connection.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.connection.rollback()
+        return jsonify({"success": False, "message": str(e)})
 
 ##########################################################
 ##########################################################

@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/camera.css') }}" >
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/temp.css') }}" >
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/data.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/admin.css') }}" >
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -32,10 +33,11 @@
         <ul class="list">
             <li class="tab-button tab-show">상황판</li>
             <li class="tab-button">실시간 상황</li>
-            <!--<li class="tab-button">데이터 통계</li>-->
-            <!--<li class="tab-button">사용자 관리</li>-->
-            <!--<li class="tab-button">관리자 모드</li>-->
             <li class="tab-button">체온정보</li>
+            <li class="tab-button">데이터 통계</li>
+            <!--<li class="tab-button">사용자 관리</li>-->
+            <li class="tab-button">관리자 모드</li>
+            
         </ul>
     </div>
     <div class="tab-page show">
@@ -730,10 +732,59 @@
         </div>
     </div>
     <div class="tab-page">
-        사용자 관리
-    </div>
-    <div class="tab-page">
-        관리자 모드
+        <div class="admin-button-div">
+            <button class="admin-button" id="open-modal">병동 등록</button>
+            <button class="admin-button">로봇 등록</button>
+        </div>    
+        <!-- Modal -->
+        <div class="modal-overlay" id="modal-overlay">
+            <div class="modal">
+                <h2>병동 등록</h2>
+                <form id="ward-form">
+                    <label for="hospital-name">병원 이름</label>
+                    <input type="text" id="hospital-name" name="hospital-name" placeholder="병원 이름 입력" required>
+                
+                    <label for="ward-name">병동</label>
+                    <input type="text" id="ward-name" name="ward-name" placeholder="병동 이름 입력" required>
+                
+                    <label for="room-number">호실</label>
+                    <input type="text" id="room-number" name="room-number" placeholder="호실 번호 입력" required>
+                
+                    <label for="ward-photo">병동 사진</label>
+                    <input type="file" id="ward-photo" name="ward-photo" accept="image/*" required>
+                
+                    <div class="modal-buttons">
+                        <button type="submit" class="modal-submit">등록</button>
+                        <button type="button" class="modal-close" id="close-modal">닫기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="robot-modal-overlay" id="robot-modal-overlay">
+            <div class="robot-modal">
+                <h2>로봇 목록</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>로봇 ID</th>
+                            <th>병원 이름</th>
+                            <th>병동</th>
+                            <th>호실</th>
+                            <th>상태</th>
+                            <th>등록 날짜</th>
+                        </tr>
+                    </thead>
+                    <tbody id="robot-table-body">
+                        <!-- 데이터가 여기 채워집니다. -->
+                    </tbody>
+                </table>
+                <div class="robot-modal-buttons">
+                    <button type="button" id="open-register-modal">로봇 등록</button> <!-- 로봇 등록 버튼 -->
+                    <button type="button" class="robot-modal-close" id="close-robot-modal">닫기</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     
@@ -741,5 +792,6 @@
     <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
     <script src="{{ url_for('static', filename='js/data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/temp.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>
