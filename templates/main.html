@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://unpkg.com/socket.io-client@4.8.0/dist/socket.io.min.js" integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>-->
 </head>
 <body>
@@ -714,21 +715,16 @@
         </div> 
     </div>
     <div class="tab-page">
-        <div class="data-left-box">
-            <p class="data-p">센서 데이터</p>
-            <div id="sensor" class="data-box">
-
-            </div>
+        <div class = "data-left">
+            <button>전체</button>
+            <button>욕창</button>
+            <button>낙상</button>
+            <button>먼지감지</button>
+            <button>물감지</button>
+            <button>화재감지</button>
         </div>
-        <div class="data-center-box">
-            <p class="data-p">로봇 데이터</p>
-            <div id="robot" class="data-box"></div>
-        </div>
-        <div class="data-right-box">
-            <p class="data-p">낙상 데이터</p>
-            <div id="vision" class="data-box">
-
-            </div>
+        <div class = "data-right"> 
+            <canvas id="contentChart" width="400" height="200"></canvas>
         </div>
     </div>
     <div class="tab-page">
@@ -785,6 +781,38 @@
                 </div>
             </div>
         </div>
+
+        <div class="robot-modal-overlay" id="robot-regist-modal-overlay">
+            <div class="robot-modal" id="robot-register-modal">
+                <h2>로봇 등록</h2>
+                <form id="robot-register-form">
+                    <label for="robot-id">로봇 ID</label>
+                    <input type="text" id="robot-id" required>
+                
+                    <label for="hospital-name">병원 이름</label>
+                    <input type="text" id="hospital-name-regist" required>
+                
+                    <label for="ward">병동</label>
+                    <input type="text" id="ward" required>
+                
+                    <label for="room">호실</label>
+                    <input type="text" id="room" required>
+                
+                    <label for="state">상태</label>
+                    <select id="state">
+                        <option value="운행">운행</option>
+                        <option value="고장">고장</option>
+                        <option value="수리">수리</option>
+                    </select>
+                
+                    <div class="robot-modal-buttons">
+                        <button type="submit">등록</button>
+                        <button type="button" id="go-back-to-list">뒤로 가기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
     
     

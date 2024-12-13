@@ -163,3 +163,96 @@
 .modal, .robot-modal {
     animation: fadeIn 0.3s;
 }
+
+#robot-register-modal {
+    width: 500px;
+}
+
+/* 로봇 등록 폼 스타일 */
+#robot-register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 요소 간격 */
+}
+
+#robot-register-form label {
+    font-weight: bold; /* 레이블 텍스트 강조 */
+    color: #333; /* 텍스트 색상 */
+}
+
+#robot-register-form input,
+#robot-register-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease; /* 부드러운 전환 */
+}
+
+#robot-register-form input:focus,
+#robot-register-form select:focus {
+    border-color: #007bff; /* 포커스 시 테두리 색 변경 */
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* 포커스 시 그림자 효과 */
+}
+
+#robot-register-form .robot-modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#robot-register-form button {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#robot-register-form button[type="submit"] {
+    background: #007bff; /* 등록 버튼 색상 */
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+#robot-register-form button[type="submit"]:hover {
+    background: #0056b3; /* 호버 시 더 어두운 색상 */
+}
+
+#robot-register-form button#go-back-to-list {
+    background: #ccc; /* 뒤로가기 버튼 색상 */
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+#robot-register-form button#go-back-to-list:hover {
+    background: #999; /* 호버 시 더 어두운 회색 */
+}
+
+/* 모달 내용 중앙 정렬 */
+.robot-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 내부 요소 간격 */
+}
+
+.robot-modal h2 {
+    text-align: center; /* 제목 중앙 정렬 */
+    font-size: 24px;
+    font-weight: bold;
+    color: #020202; /* 제목 색상 */
+}
+
+.robot-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* 버튼 간격 */
+}
+
+/* 입력 폼과 버튼에 여백 추가 */
+.robot-modal input,
+.robot-modal select {
+    margin-bottom: 10px; /* 입력 필드 아래 여백 */
+}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, jsonify, render_template, url_for, g, request, send_from_directory, abort
 from flask_socketio import SocketIO
+from datetime import datetime, timedelta
 import paho.mqtt.client as mqtt
 import time
 import json
@@ -23,8 +24,7 @@ def on_message(client, userdata, message):
         result = db.insert_temp(message.payload)
     
     elif message.topic == "sensor":
-        message_payload = message.payload.decode('utf-8')  # 바이트를 문자열로 변환
-        # print(message_payload)  # 디코딩된 메시지 확인
+        message_payload = message.payload.decode('utf-8') 
 
         jsonmsg = json.loads(message_payload)
         db = base.globalDB()
@@ -69,7 +69,7 @@ def on_message(client, userdata, message):
         db.connecter()
 
         visionjson = db.select_vision_uptime()
-        vision = json.loads(visionjson) # type: ignore
+        vision = json.loads(visionjson)
         print(vision)
 
         db.insert_vision(message.payload)
@@ -87,50 +87,44 @@ def on_message(client, userdata, message):
         down = 0
         check = -1
 
-        # 기존의 데이터베이스에서 `room`과 `sickbed`가 일치하는 항목 찾기
         for i in range(0, len(vision)):
             if vision[i]['room'] == int(roonbed[0]) and vision[i]['sickbed'] == int(roonbed[1]):
                 check = i
                 break
             
-        # falldown 상태가 true일 경우, 바로 처리
         if jsonmsg["falldown"]:
             content = "down"
             value = "1"
 
-            # insert data 생성
             insertdata = (
                 '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+ 
                 '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+ 
                 '", "value":"'+value+'", "hos_name" : "'+hos_name+'"}'
             )
 
-            print("Insert Data:", insertdata)  # 확인용 출력
-            db.insert_alarm(insertdata)  # 한 번만 insert 호출
+            print("Insert Data:", insertdata) 
+            db.insert_alarm(insertdata) 
         else:
-            # falldown이 false일 경우, pose 상태 확인
             if check != -1:
                 if vision[check]['pose'] == pose_value:
-                    pose = 1  # 포즈가 동일하면 1로 설정
+                    pose = 1
                 elif vision[check]['pose'] == "none":
-                    pose = 0  # 포즈가 없으면 0으로 설정
+                    pose = 0
             else:
                 pose = 0
 
-            # pose 상태가 1 또는 falldown이 true일 때 insert
             if pose == 1 :
                 content = "pose" 
                 value = pose_value
 
-                # insert data 생성
                 insertdata = (
                     '{"rid":"'+jsonmsg["robot_id"]+'", "xaxis":"'+str(int(roonbed[0]))+
                     '", "yaxis":"'+str(int(roonbed[1]))+'", "content":"'+content+
                     '", "value":"'+value+'", "hos_name" : "'+hos_name+'"}'
                 )
 
-                print("Insert Data:", insertdata)  # 확인용 출력
-                db.insert_alarm(insertdata)  # 한 번만 insert 호출
+                print("Insert Data:", insertdata) 
+                db.insert_alarm(insertdata)
 
 
     elif message.topic == "robot_position":
@@ -140,7 +134,6 @@ def on_message(client, userdata, message):
         db = base.globalDB()
         db.connecter()
         db.insert_robot(message.payload)
-        # 클라이언트에 메시지 전송
         socketio.emit('robot_position', jsonmsg)
         print(jsonmsg)
         
@@ -161,7 +154,6 @@ def start_mqtt_client():
 
     client.connect("1.220.178.46", 11883, 60)
     
-    # MQTT 루프를 비동기로 시작
     client.loop_start()
 
     return client
@@ -172,35 +164,33 @@ def start_mqtt_client():
 # Flask 라우팅
 @app.route('/')
 def index():
-    return render_template('index.html')  # main.html 렌더링
+    return render_template('index.html')
 
 @app.route('/main')
 def main():
-    return render_template('main.html')  # main.html 렌더링
+    return render_template('main.html') 
 
 @app.route('/test')
 def test():
-    return render_template('test.html')  # main.html 렌더링
+    return render_template('test.html') 
 
 ####################################################################
 ####################################################################
 
 @app.route('/send_pose_data', methods=['POST'])
 def send_pose_data():
-    data = request.get_json()  # JSON 데이터를 받아옴
+    data = request.get_json()
     print("Received pose data:", data)
     
-    # MQTT로 데이터 전송
     client.publish("aos_pose_detect_result", json.dumps(data))
     
     return jsonify({"message": "Pose data sent!"})
 
 @app.route('/send_sensor_data', methods=['POST'])
 def send_sensor_data():
-    data = request.get_json()  # JSON 데이터를 받아옴
+    data = request.get_json() 
     print("Received sensor data:", data)
     
-    # MQTT로 데이터 전송
     client.publish("sensor", json.dumps(data))
     
     return jsonify({"message": "Sensor data sent!"})
@@ -260,7 +250,6 @@ def get_robo_data():
     db.connecter()
     result = db.select_robot_regist(hospital_name,ward)
     print(result)
-    # JSON 형식으로 결과 반환
     return jsonify({
         'total_count': result['total_count'],
         'operating_count': result['operating_count'],
@@ -275,7 +264,6 @@ def get_robo_count_all():
     db.connecter()
     result = db.select_robot_count_all(hospital_name)
     print(result)
-    # JSON 형식으로 결과 반환
     return jsonify({
         'total_count': result['total_count'],
         'operating_count': result['operating_count'],
@@ -289,14 +277,13 @@ def get_hospital_name():
     db = base.globalDB()
     db.connecter()
     
-    # hospital_id로 병원 이름을 조회하는 쿼리
     query = "SELECT hospital_name FROM hospital_tb WHERE hospital_id = %s"
     db.cursors.execute(query, (hospital_id,))
     result = db.cursors.fetchone()
 
     if result:
-        return jsonify({'hospital_name': result[0]})  # 병원 이름을 반환
-    return jsonify({'hospital_name': 'Unknown'})  # 결과가 없을 경우
+        return jsonify({'hospital_name': result[0]}) 
+    return jsonify({'hospital_name': 'Unknown'}) 
 
 @app.route('/get_robo_regist_all_data', methods=['GET'])
 def get_robo_all_data():
@@ -304,8 +291,6 @@ def get_robo_all_data():
     db = base.globalDB()
     db.connecter() 
     result = db.select_robot_regist_all(hospital_name)
-    # print(result)
-    # JSON 형식으로 결과 반환
     return jsonify(result)
 
 @app.route('/get_total_alert_data', methods=['GET'])
@@ -318,19 +303,16 @@ def get_total_alert_data():
 
     for item in result:
         robot_info = db.get_robot_info(item['robot_id'])
-        # "content"가 'down' 또는 'pose'인 경우 병상 좌표로 설정
         if item["content"] in ["down", "pose"]:
             item['place'] = f"{item['x']}호 {item['y']}병상"
         else:
-            # "content"가 'down' 또는 'pose'가 아닐 경우 병동과 병실 정보 설정
             if robot_info:
                 ward = robot_info['ward']
                 room = robot_info['room']
-                item['place'] = f"{ward} {room}"  # 예: '2병동 201호' 형식
+                item['place'] = f"{ward} {room}"
             else:
-                item['place'] = "복도"  # 정보가 없을 경우 '복도'로 설정
+                item['place'] = "복도"
 
-    # JSON 형식으로 결과 반환
     return jsonify(result)
 
 @app.route('/get_image_url')
@@ -339,12 +321,11 @@ def get_image_url():
     floor = request.args.get('floor')
     db = base.globalDB()
     db.connecter()
-     # DB에서 이미지 URL 가져오기
     image_url = db.get_image_url(hospital_name, floor)
 
     if image_url:
-        return jsonify({'url': image_url})  # URL을 JSON 형태로 반환
-    return jsonify({'error': 'Image not found'}), 404  # 이미지가 없으면 404 반환
+        return jsonify({'url': image_url}) 
+    return jsonify({'error': 'Image not found'}), 404
 
 @app.route('/get_images', methods=['GET'])
 def get_images():
@@ -352,7 +333,7 @@ def get_images():
     db = base.globalDB()
     db.connecter()
     
-    image_data = db.get_images(hospital_name)  # url과 floor 필드를 함께 가져오기
+    image_data = db.get_images(hospital_name)
     return jsonify({'images': image_data})
 
 @app.route('/signin', methods=['POST'])
@@ -367,10 +348,9 @@ def signin():
 @app.route('/static/<path:filename>')
 def serve_static_file(filename):
     try:
-        # static 폴더에서 파일을 반환
         return send_from_directory('static', filename)
     except FileNotFoundError:
-        abort(404)  # 파일이 없으면 404 에러 반환
+        abort(404)
 
 @app.route('/input_action', methods=['POST'])
 def input_action():
@@ -394,7 +374,6 @@ def get_robo_regist():
     db.connecter()
     result = db.get_robo_regist(hospital)
 
-    # JSON 형식으로 반환
     return jsonify(result)
 
 @app.route('/register_robo', methods=['POST'])
@@ -411,7 +390,6 @@ def register_robo():
     db = base.globalDB()
     db.connecter()
 
-    # DB에 로봇 정보 삽입
     query = f"""
         INSERT INTO robot_regist_tb (robot_id, hospital_name, ward, room, state, regist_date, hospital_id)
         VALUES ('{robot_id}', '{hospital_name}', '{ward}', '{room}', '{state}', CURRENT_TIMESTAMP, '{hospital_id}')
@@ -428,12 +406,142 @@ def register_robo():
         db.connection.rollback()
         return jsonify({"success": False, "message": str(e)})
 
+@app.route('/input_robo_regist', methods=['POST'])
+def input_robo_regist():
+    data = request.get_json()
+    print(data)
+    robot_id = data.get('robot_id')
+    hospital_name = data.get('hospital_name')
+    ward = data.get('ward')
+    room = data.get('room')
+    state = data.get('state')
+    hospital_id = data.get('hospital_id')
+
+    try:
+        db = base.globalDB()
+        db.connecter()
+        db.insert_robot_regist(robot_id, hospital_name, ward, room, state, hospital_id)
+
+        return jsonify({"message": "로봇이 성공적으로 등록되었습니다."})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400  # 중복 시 400 에러 반환
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "로봇 등록 중 오류 발생"}), 500
+    
+@app.route('/input_hospital_regist', methods=['POST'])
+def input_hospital_regist():
+    try:
+        data = request.get_json()
+        hospital_name = data.get('hospital_name')
+        ward = data.get('ward')
+        room = data.get('room')
+        ward_photo = data.get('ward_photo')
+        hospital_id = data.get('hospital_id')
+
+        db = base.globalDB()
+        db.connecter()
+        db.insert_hospital_regist(hospital_name, ward, room, ward_photo, hospital_id)
+
+        return jsonify({"message": "병동이 성공적으로 등록되었습니다."}), 200
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400  # 유효성 검사 실패
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "병동 등록 중 오류 발생"}), 500
+    
+@app.route('/get_content_stats')
+def get_content_stats():
+    db = base.globalDB()
+    db.connecter()
+
+    try:
+        query = """
+            SELECT content, COUNT(*) as count
+            FROM alarm_data_tb
+            GROUP BY content
+        """
+        db.cursors.execute(query)
+        data = db.cursors.fetchall()
+
+        content_map = {
+            'down': '낙상',
+            'water': '물감지',
+            'dust': '먼지감지',
+            'fire': '화재감지',
+            'pose': '욕창감지'
+        }
+
+        result = [
+            {'content': content_map.get(row[0], row[0]), 'count': row[1]}
+            for row in data
+        ]
+
+    except Exception as e:
+        print(f"Error: {e}")
+        result = {'error': '데이터를 가져오는 중 문제가 발생했습니다.'}
+
+    finally:
+        db.cursors.close()
+
+    return jsonify(result)
+
+@app.route('/get_content_stats_by_date')
+def get_content_stats_by_date():
+    content = request.args.get('content', None)
+
+    if not content:
+        return jsonify({'error': 'content 파라미터가 필요합니다.'})
+
+    db = base.globalDB()
+    db.connecter()
+
+    try:
+        query = """
+            SELECT DATE_FORMAT(uptime, '%%Y-%%m-%%d') as date, COUNT(*) as count
+            FROM alarm_data_tb
+            WHERE content = %s
+            GROUP BY date
+            ORDER BY date
+        """
+        db.cursors.execute(query, (content,))
+        data = db.cursors.fetchall()
+
+        db_results = {row[0]: row[1] for row in data}
+
+        if db_results:
+            start_date = datetime.strptime(min(db_results.keys()), "%Y-%m-%d")
+            end_date = datetime.strptime(max(db_results.keys()), "%Y-%m-%d")
+        else:
+            start_date = datetime.now()
+            end_date = datetime.now()
+
+        date_range = []
+        current_date = start_date
+        while current_date <= end_date:
+            date_range.append(current_date.strftime("%Y-%m-%d"))
+            current_date += timedelta(days=1)
+
+        result = [
+            {'date': date, 'count': db_results.get(date, 0)}
+            for date in date_range
+        ]
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': '데이터를 가져오는 중 문제가 발생했습니다.'})
+    finally:
+        db.cursors.close()
+
 ##########################################################
 ##########################################################
 
 if __name__ == "__main__":
     db = base.globalDB()
     db.connecter()
-    client = start_mqtt_client()  # MQTT 클라이언트 시작
+    client = start_mqtt_client()
 
     socketio.run(app, host='0.0.0.0', port=8080)

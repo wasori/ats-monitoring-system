@@ -680,3 +680,38 @@ class globalDB:
                 })
 
         return items
+    
+    def insert_robot_regist(self, robot_id, hospital_name, ward, room, state, hospital_id):
+        # 로봇 ID 중복 확인
+        check_query = "SELECT COUNT(*) FROM robot_regist_tb WHERE robot_id = %s"
+        self.cursors.execute(check_query, (robot_id,))
+        count = self.cursors.fetchone()[0]
+    
+        if count > 0:
+            raise ValueError("이미 등록된 로봇 ID입니다.")  # 중복 시 예외 발생
+        query = """
+            INSERT INTO robot_regist_tb (robot_id, hospital_name, ward, room, state,regist_date, hospital_id)
+            VALUES (%s, %s, %s, %s, %s ,CURRENT_TIMESTAMP,%s)
+        """
+        params = (robot_id, hospital_name, ward, room, state, hospital_id)
+
+        if not self.cursors:
+            print("DB 연결 실패")
+            self.connecter.rollback()
+            return
+        try:
+            self.cursors.execute(query, params)
+            self.connecter.commit()
+        except Exception as e:
+            print(f"쿼리 실행 오류: {e}")
+            self.connecter.rollback()
+
+    def insert_hospital_regist(self, hospital_name, ward, room, ward_photo, hospital_id):
+        # DB 삽입 쿼리 작성
+        query = """
+            INSERT INTO hospital_tb (hospital_name, ward, room, hospital_id)
+            VALUES (%s, %s, %s, %s)
+        """
+        values = (hospital_name, ward, room, ward_photo, hospital_id)
+        # DB 실행 로직 구현
+        self.execute_query(query, values)
